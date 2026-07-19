@@ -3,9 +3,7 @@ import { AUTH_TOKEN_KEY } from "../constants/auth";
 const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
 
 if (!API_URL) {
-  throw new Error(
-    "VITE_API_URL is missing. Add it to the .env.local file.",
-  );
+  throw new Error("VITE_API_URL is missing. Add it to the .env.local file.");
 }
 
 type ValidationErrors = Record<string, string[]>;
@@ -19,11 +17,7 @@ export class ApiError extends Error {
   status: number;
   errors?: ValidationErrors;
 
-  constructor(
-    message: string,
-    status: number,
-    errors?: ValidationErrors,
-  ) {
+  constructor(message: string, status: number, errors?: ValidationErrors) {
     super(message);
 
     this.name = "ApiError";

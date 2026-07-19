@@ -18,9 +18,7 @@ type AuthContextValue = {
   logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextValue | undefined>(
-  undefined,
-);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -33,9 +31,7 @@ function readStoredToken(): string | null {
 export function AuthProvider({ children }: AuthProviderProps) {
   const queryClient = useQueryClient();
 
-  const [token, setTokenState] = useState<string | null>(
-    readStoredToken,
-  );
+  const [token, setTokenState] = useState<string | null>(readStoredToken);
 
   const setToken = useCallback((newToken: string) => {
     localStorage.setItem(AUTH_TOKEN_KEY, newToken);
@@ -66,20 +62,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [logout, setToken, token],
   );
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error(
-      "useAuth must be used inside AuthProvider.",
-    );
+    throw new Error("useAuth must be used inside AuthProvider.");
   }
 
   return context;

@@ -15,6 +15,4 @@ export const loginSchema = z.object({
   workspace: z.enum(["the-address", "marq"]),
 });
 
-export type LoginFormValues = z.infer<
-  typeof loginSchema
->;
+export type LoginFormValues = z.infer<typeof loginSchema>;
