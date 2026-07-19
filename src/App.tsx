@@ -2,9 +2,8 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
-
-import { AppLayout } from "./components/AppLayout";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { UiKitPage } from "@/pages/UiKitPage";
+import { AppLayout } from "@/components/AppLayout";import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicOnlyRoute } from "./components/PublicOnlyRoute";
 import { CustomersPage } from "./pages/CustomersPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -26,6 +25,7 @@ function App() {
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
+        
           <Route
             index
             element={<DashboardPage />}
@@ -40,6 +40,10 @@ function App() {
             path="reservations"
             element={<ReservationsPage />}
           />
+          <Route
+      path="ui-kit"
+      element={<UiKitPage />}
+    />
         </Route>
       </Route>
 

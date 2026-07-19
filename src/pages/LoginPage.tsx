@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   useLocation,
   useNavigate,
@@ -86,7 +86,7 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<LoginFormValues>({
@@ -98,8 +98,10 @@ export function LoginPage() {
     },
   });
 
-  const selectedWorkspace = watch("workspace");
-
+const selectedWorkspace = useWatch({
+  control,
+  name: "workspace",
+});
   const onSubmit = handleSubmit(async (values) => {
     try {
       const response =
