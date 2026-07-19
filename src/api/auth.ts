@@ -1,30 +1,30 @@
-import { apiGet, apiPost } from "../lib/fetcher";
 import type {
   LoginCredentials,
   LoginResponse,
-  ProfileResponse,
   User,
 } from "../types/auth";
 
 export async function loginRequest(
   credentials: LoginCredentials,
 ): Promise<LoginResponse> {
-  return apiPost<LoginResponse, LoginCredentials>(
-    "/api/login",
-    credentials,
-  );
+  return Promise.resolve({
+    token: "dummy-token",
+    user: {
+      id: 1,
+      name: "Salma",
+      email: credentials.email,
+    },
+  });
 }
 
 export async function getProfile(): Promise<User> {
-  const response = await apiGet<ProfileResponse>("/api/user");
-
-  if ("user" in response) {
-    return response.user;
-  }
-
-  return response;
+  return Promise.resolve({
+    id: 1,
+    name: "Salma",
+    email: "user@gmail.com",
+  });
 }
 
 export async function logoutRequest(): Promise<void> {
-  await apiPost<void>("/api/logout");
+  return Promise.resolve();
 }

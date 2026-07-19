@@ -10,6 +10,7 @@ import { CustomersPage } from "./pages/CustomersPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { ReservationsPage } from "./pages/ReservationsPage";
 
 function App() {
   return (
@@ -33,6 +34,11 @@ function App() {
           <Route
             path="customers"
             element={<CustomersPage />}
+          />
+
+          <Route
+            path="reservations"
+            element={<ReservationsPage />}
           />
         </Route>
       </Route>
