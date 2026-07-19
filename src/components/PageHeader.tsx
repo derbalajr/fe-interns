@@ -3,10 +3,7 @@ type PageHeaderProps = {
   description?: string;
 };
 
-export function PageHeader({
-  title,
-  description,
-}: PageHeaderProps) {
+export function PageHeader({ title, description }: PageHeaderProps) {
   return (
     <header className="mb-8">
       <h1 className="text-3xl font-bold tracking-tight text-slate-950">
@@ -14,9 +11,7 @@ export function PageHeader({
       </h1>
 
       {description ? (
-        <p className="mt-2 text-sm text-slate-600">
-          {description}
-        </p>
+        <p className="mt-2 text-sm text-slate-600">{description}</p>
       ) : null}
     </header>
   );

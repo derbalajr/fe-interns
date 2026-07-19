@@ -8,14 +8,10 @@ export function useLoginMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (credentials: LoginCredentials) =>
-      loginRequest(credentials),
+    mutationFn: (credentials: LoginCredentials) => loginRequest(credentials),
 
     onSuccess: async (response) => {
-      queryClient.setQueryData(
-        profileQueryKey,
-        response.user,
-      );
+      queryClient.setQueryData(profileQueryKey, response.user);
 
       await queryClient.invalidateQueries({
         queryKey: profileQueryKey,

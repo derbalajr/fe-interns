@@ -1,0 +1,88 @@
+import type { Customer } from "@/types/customer";
+
+export const mockCustomers: Customer[] = [
+  {
+    id: "CUS-001",
+    name: "Ahmed Hassan",
+    email: "ahmed@example.com",
+    company: "Horizon Properties",
+    status: "active",
+  },
+  {
+    id: "CUS-002",
+    name: "Mariam Ali",
+    email: "mariam@example.com",
+    company: "North Star Group",
+    status: "pending",
+  },
+  {
+    id: "CUS-003",
+    name: "Omar Khaled",
+    email: "omar@example.com",
+    company: "Keystone Developments",
+    status: "active",
+  },
+  {
+    id: "CUS-004",
+    name: "Salma Walid",
+    email: "salma@example.com",
+    company: "Urban Gate",
+    status: "inactive",
+  },
+  {
+    id: "CUS-005",
+    name: "Youssef Adel",
+    email: "youssef@example.com",
+    company: "Prime Assets",
+    status: "active",
+  },
+  {
+    id: "CUS-006",
+    name: "Nour Ibrahim",
+    email: "nour@example.com",
+    company: "Blue Stone",
+    status: "pending",
+  },
+  {
+    id: "CUS-007",
+    name: "Karim Tarek",
+    email: "karim@example.com",
+    company: "Capital Homes",
+    status: "active",
+  },
+  {
+    id: "CUS-008",
+    name: "Farah Mahmoud",
+    email: "farah@example.com",
+    company: "Vertex Realty",
+    status: "inactive",
+  },
+  {
+    id: "CUS-009",
+    name: "Hassan Mostafa",
+    email: "hassan@example.com",
+    company: "MarQ",
+    status: "active",
+  },
+  {
+    id: "CUS-010",
+    name: "Dina Samir",
+    email: "dina@example.com",
+    company: "TAI",
+    status: "pending",
+  },
+  {
+    id: "CUS-011",
+    name: "Mohamed Emad",
+    email: "mohamed@example.com",
+    company: "Skyline Estates",
+    status: "active",
+  },
+  {
+    id: "CUS-012",
+    name: "Laila Amr",
+    email: "laila@example.com",
+    company: "Emerald Group",
+    status: "inactive",
+  },
+];
