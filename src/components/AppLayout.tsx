@@ -1,10 +1,24 @@
 import {
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  LogOut,
+} from "lucide-react";
+import {
   NavLink,
   Outlet,
   useNavigate,
 } from "react-router-dom";
 
+import { APP_MODULES } from "../constants/modules";
 import { useAuth } from "../context/AuthContext";
+import { getCurrentTenant } from "../lib/tenant";
+
+const iconMap = {
+  Dashboard: LayoutDashboard,
+  Customers: Users,
+  Reservations: CalendarDays,
+};
 
 const getNavLinkClasses = ({
   isActive,
@@ -12,65 +26,137 @@ const getNavLinkClasses = ({
   isActive: boolean;
 }) => {
   const base =
-    "rounded-lg px-3 py-2 text-sm font-medium transition";
+    "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200";
 
   return isActive
-    ? `${base} bg-slate-900 text-white`
-    : `${base} text-slate-600 hover:bg-slate-100`;
+    ? `${base} bg-slate-900 text-white shadow-md`
+    : `${base} text-slate-600 hover:bg-slate-100 hover:text-slate-900`;
 };
 
 export function AppLayout() {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
+  const tenant = getCurrentTenant();
+
+  const modules = APP_MODULES.filter((module) => {
+    if (!module.tenants) {
+      return true;
+    }
+
+    return module.tenants.includes(tenant.id);
+  });
+
   const handleLogout = async () => {
     await logout();
+
     navigate("/login", {
       replace: true,
     });
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <NavLink
-            to="/"
-            className="font-serif text-xl font-semibold"
-          >
-            Keystone CRM
-          </NavLink>
+    <div className="flex min-h-screen bg-slate-100">
 
-          <nav className="flex items-center gap-2">
-            <NavLink
-              to="/"
-              end
-              className={getNavLinkClasses}
-            >
-              Dashboard
-            </NavLink>
+      {/* Sidebar */}
+      <aside className="flex w-72 flex-col border-r border-slate-200 bg-white">
 
-            <NavLink
-              to="/customers"
-              className={getNavLinkClasses}
-            >
-              Customers
-            </NavLink>
+        {/* Logo */}
+        <div className="border-b border-slate-200 p-6">
+          <div className="flex items-center gap-4">
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="ml-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold text-white ${tenant.primaryColor}`}
             >
-              Logout
-            </button>
-          </nav>
+              {tenant.logoText}
+            </div>
+
+            <div>
+              <h1 className="text-lg font-bold">
+                {tenant.displayName}
+              </h1>
+
+              <p className="text-sm text-slate-500">
+                {tenant.shortName}
+              </p>
+            </div>
+
+          </div>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-8">
-        <Outlet />
-      </main>
+        {/* Navigation */}
+        <nav className="flex-1 space-y-2 p-4">
+
+          {modules.map((module) => {
+            const Icon =
+              iconMap[module.label as keyof typeof iconMap];
+
+            return (
+              <NavLink
+                key={module.path}
+                to={module.path}
+                end={module.path === "/"}
+                className={getNavLinkClasses}
+              >
+                <Icon size={20} />
+
+                <span>{module.label}</span>
+              </NavLink>
+            );
+          })}
+
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-slate-200 p-4">
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          >
+            <LogOut size={18} />
+
+            Logout
+          </button>
+
+        </div>
+
+      </aside>
+
+      {/* Main */}
+      <div className="flex flex-1 flex-col">
+
+        {/* Header */}
+        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
+
+          <div>
+            <h2 className="text-2xl font-bold">
+              {tenant.displayName}
+            </h2>
+
+            <p className="text-sm text-slate-500">
+              Customer Relationship Management
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 font-semibold text-white">
+              S
+            </div>
+
+          </div>
+
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 overflow-auto bg-slate-100 p-8">
+          <Outlet />
+        </main>
+
+      </div>
+
     </div>
   );
 }
