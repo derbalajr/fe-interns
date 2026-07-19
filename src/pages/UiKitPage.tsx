@@ -1,5 +1,7 @@
 import { useState } from "react";
-
+import { customerColumns } from "@/components/data-table/customerColumns";
+import { DataTable } from "@/components/data-table/DataTable";
+import { mockCustomers } from "@/mocks/customers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -206,6 +208,24 @@ export function UiKitPage() {
           </Dialog>
         </CardContent>
       </Card>
+      <Card>
+  <CardHeader>
+    <CardTitle>Customer data table</CardTitle>
+
+    <CardDescription>
+      A reusable paginated table powered by
+      TanStack Table.
+    </CardDescription>
+  </CardHeader>
+
+  <CardContent>
+    <DataTable
+      columns={customerColumns}
+      data={mockCustomers}
+      pageSize={5}
+    />
+  </CardContent>
+</Card>
     </div>
   );
 }
