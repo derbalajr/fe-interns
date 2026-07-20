@@ -1,4 +1,10 @@
-import { LayoutDashboard, Users, CalendarDays, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  ShieldCheck,
+  LogOut,
+} from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { APP_MODULES } from "../constants/modules";
@@ -9,6 +15,7 @@ const iconMap = {
   Dashboard: LayoutDashboard,
   Customers: Users,
   Reservations: CalendarDays,
+  Users: ShieldCheck,
 };
 
 const getNavLinkClasses = ({ isActive }: { isActive: boolean }) => {
@@ -66,7 +73,8 @@ export function AppLayout() {
         {/* Navigation */}
         <nav className="flex-1 space-y-2 p-4">
           {modules.map((module) => {
-            const Icon = iconMap[module.label as keyof typeof iconMap];
+            const Icon =
+              iconMap[module.label as keyof typeof iconMap] ?? LayoutDashboard;
 
             return (
               <NavLink
