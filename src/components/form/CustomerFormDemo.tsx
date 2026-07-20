@@ -6,7 +6,7 @@ import {
   customerFormSchema,
   type CustomerFormValues,
 } from "@/schemas/customerFormSchema";
-
+import { toast } from "sonner";
 import { FormDateField } from "./FormDateField";
 import { FormSelectField } from "./FormSelectField";
 import { FormTextField } from "./FormTextField";
@@ -44,6 +44,10 @@ export function CustomerFormDemo() {
 
   const onSubmit = (values: CustomerFormValues) => {
     console.log("Validated values:", values);
+
+    toast.success("Customer form submitted", {
+      description: "The form passed validation successfully.",
+    });
   };
 
   return (
