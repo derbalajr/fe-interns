@@ -8,6 +8,7 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
+import UsersPage from "@/pages/UsersPage";
 
 function App() {
   return (
@@ -25,6 +26,8 @@ function App() {
           <Route path="customers" element={<CustomersPage />} />
 
           <Route path="reservations" element={<ReservationsPage />} />
+
+          <Route path="users" element={<UsersPage />} />
         </Route>
       </Route>
 

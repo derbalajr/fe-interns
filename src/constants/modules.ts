@@ -20,4 +20,9 @@ export const APP_MODULES: AppModule[] = [
     path: "/reservations",
     tenants: ["marq"],
   },
+  {
+    label: "Users",
+    path: "/users",
+    tenants: ["marq"],
+  },
 ];
