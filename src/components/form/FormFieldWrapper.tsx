@@ -5,7 +5,7 @@ interface FormFieldWrapperProps {
   label: string;
   error?: string;
   description?: string;
-  children: ReactNode;
+  children: (describedBy?: string) => ReactNode;
 }
 
 export function FormFieldWrapper({
@@ -15,11 +15,15 @@ export function FormFieldWrapper({
   description,
   children,
 }: FormFieldWrapperProps) {
-  const descriptionId = description ? `${id}-description` : undefined;
+  const descriptionId = description
+    ? `${id}-description`
+    : undefined;
 
   const errorId = error ? `${id}-error` : undefined;
 
-  const describedBy = [descriptionId, errorId].filter(Boolean).join(" ");
+  const describedBy =
+    [descriptionId, errorId].filter(Boolean).join(" ") ||
+    undefined;
 
   return (
     <div className="space-y-2">
@@ -28,15 +32,22 @@ export function FormFieldWrapper({
       </label>
 
       {description && (
-        <p id={descriptionId} className="text-sm text-muted-foreground">
+        <p
+          id={descriptionId}
+          className="text-sm text-muted-foreground"
+        >
           {description}
         </p>
       )}
 
-      <div aria-describedby={describedBy || undefined}>{children}</div>
+      {children(describedBy)}
 
       {error && (
-        <p id={errorId} role="alert" className="text-sm text-destructive">
+        <p
+          id={errorId}
+          role="alert"
+          className="text-sm text-destructive"
+        >
           {error}
         </p>
       )}

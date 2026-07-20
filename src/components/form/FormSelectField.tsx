@@ -52,27 +52,29 @@ export function FormSelectField<TFieldValues extends FieldValues>({
           description={description}
           error={fieldState.error?.message}
         >
-          <Select
-            value={field.value ?? ""}
-            onValueChange={(value) => field.onChange(value ?? "")}
-            disabled={disabled}
-          >
-            <SelectTrigger
-              id={id}
-              aria-invalid={fieldState.invalid || undefined}
-              aria-describedby={fieldState.error ? `${id}-error` : undefined}
+          {(describedBy) => (
+            <Select
+              value={field.value ?? ""}
+              onValueChange={(value) => field.onChange(value ?? "")}
+              disabled={disabled}
             >
-              <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
+              <SelectTrigger
+                id={id}
+                aria-invalid={fieldState.invalid || undefined}
+                aria-describedby={describedBy}
+              >
+                <SelectValue placeholder={placeholder} />
+              </SelectTrigger>
 
-            <SelectContent>
-              {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              <SelectContent>
+                {options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </FormFieldWrapper>
       )}
     />

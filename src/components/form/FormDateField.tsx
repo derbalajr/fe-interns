@@ -41,16 +41,18 @@ export function FormDateField<TFieldValues extends FieldValues>({
           description={description}
           error={fieldState.error?.message}
         >
-          <Input
-            {...field}
-            id={id}
-            type="date"
-            min={min}
-            max={max}
-            disabled={disabled}
-            aria-invalid={fieldState.invalid || undefined}
-            aria-describedby={fieldState.error ? `${id}-error` : undefined}
-          />
+          {(describedBy) => (
+            <Input
+              {...field}
+              id={id}
+              type="date"
+              min={min}
+              max={max}
+              disabled={disabled}
+              aria-invalid={fieldState.invalid || undefined}
+              aria-describedby={describedBy}
+            />
+          )}
         </FormFieldWrapper>
       )}
     />

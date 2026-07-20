@@ -41,15 +41,17 @@ export function FormTextField<TFieldValues extends FieldValues>({
           description={description}
           error={fieldState.error?.message}
         >
-          <Input
-            {...field}
-            id={id}
-            type={type}
-            placeholder={placeholder}
-            disabled={disabled}
-            aria-invalid={fieldState.invalid || undefined}
-            aria-describedby={fieldState.error ? `${id}-error` : undefined}
-          />
+          {(describedBy) => (
+            <Input
+              {...field}
+              id={id}
+              type={type}
+              placeholder={placeholder}
+              disabled={disabled}
+              aria-invalid={fieldState.invalid || undefined}
+              aria-describedby={describedBy}
+            />
+          )}
         </FormFieldWrapper>
       )}
     />
