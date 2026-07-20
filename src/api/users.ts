@@ -3,7 +3,7 @@ import type { User } from "../types/user";
 import type { UserFormValues } from "../schemas/user-schema";
 
 export async function getUsers(): Promise<User[]> {
-  return Promise.resolve(mockUsers);
+  return Promise.resolve([...mockUsers]);
 }
 
 export async function createUser(

@@ -75,11 +75,15 @@ export function UserForm({
       noValidate
     >
       <div>
-        <label className="mb-2 block text-sm font-medium">
+        <label
+          htmlFor="name"
+          className="mb-2 block text-sm font-medium"
+        >
           Name
         </label>
 
         <Input
+          id="name"
           {...register("name")}
           placeholder="John Doe"
         />
@@ -92,11 +96,15 @@ export function UserForm({
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">
+        <label
+          htmlFor="email"
+          className="mb-2 block text-sm font-medium"
+        >
           Email
         </label>
 
         <Input
+          id="email"
           type="email"
           {...register("email")}
           placeholder="john@example.com"
@@ -110,11 +118,15 @@ export function UserForm({
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">
+        <label
+          htmlFor="role"
+          className="mb-2 block text-sm font-medium"
+        >
           Role
         </label>
 
         <select
+          id="role"
           {...register("role")}
           className="h-10 w-full rounded-md border bg-background px-3"
         >
@@ -124,11 +136,15 @@ export function UserForm({
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">
+        <label
+          htmlFor="status"
+          className="mb-2 block text-sm font-medium"
+        >
           Status
         </label>
 
         <select
+          id="status"
           {...register("status")}
           className="h-10 w-full rounded-md border bg-background px-3"
         >

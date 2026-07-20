@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 
 import {
   Dialog,
@@ -6,11 +6,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+
 import { UserForm } from "./UserForm";
 
 type CreateUserDialogProps = {
-  trigger: React.ReactNode;
+  trigger: ReactElement;
 };
 
 export function CreateUserDialog({
@@ -19,26 +21,22 @@ export function CreateUserDialog({
   const [open, setOpen] = useState(false);
 
   return (
-    <>
-      <div onClick={() => setOpen(true)}>
-        {trigger}
-      </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={trigger} />
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Create User</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Create User</DialogTitle>
 
-            <DialogDescription>
-              Add a new user and assign their role.
-            </DialogDescription>
-          </DialogHeader>
+          <DialogDescription>
+            Add a new user and assign their role.
+          </DialogDescription>
+        </DialogHeader>
 
-          <UserForm
-            onSuccess={() => setOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-    </>
+        <UserForm
+          onSuccess={() => setOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
