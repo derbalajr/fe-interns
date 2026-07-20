@@ -1,3 +1,5 @@
+import { CustomerFormDemo } from "@/components/form/CustomerFormDemo";
+
 import { PageHeader } from "../components/PageHeader";
 
 export function CustomersPage() {
@@ -24,6 +26,11 @@ export function CustomersPage() {
           Add customer
         </button>
       </div>
+      <div className="space-y-8">
+      {/* Existing page content */}
+
+      {import.meta.env.DEV && <CustomerFormDemo />}
+    </div>
     </section>
   );
 }
