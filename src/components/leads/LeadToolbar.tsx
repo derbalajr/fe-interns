@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,20 @@ export function LeadToolbar({
   onStageChange,
   onSourceChange,
 }: LeadToolbarProps) {
+  const [searchValue, setSearchValue] = useState(search);
+
+  useEffect(() => {
+    setSearchValue(search);
+  }, [search]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onSearchChange(searchValue);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [searchValue, onSearchChange]);
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-center gap-3">
@@ -32,8 +47,8 @@ export function LeadToolbar({
 
           <Input
             placeholder="Search Leads..."
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             className="h-11 rounded-xl border-slate-200 bg-white pl-10 shadow-none"
           />
         </div>

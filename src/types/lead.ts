@@ -5,7 +5,7 @@ export interface Lead {
   phone: string;
   source: string;
   stage: string;
-  budget: number;
+  budget: number | null;
   agent: {
     id: number;
     name: string;

@@ -36,6 +36,9 @@ export default function LeadsPage() {
     );
   }
 
+  const currentPage = data?.meta.current_page ?? 1;
+  const lastPage = data?.meta.last_page ?? 1;
+
   return (
     <div className="mx-auto max-w-[1280px] space-y-8">
       {/* Header */}
@@ -72,6 +75,19 @@ export default function LeadsPage() {
       <DataTable
         columns={columns}
         data={data?.data ?? []}
+        manualPagination
+        currentPage={currentPage}
+        pageCount={lastPage}
+        onPreviousPage={() => {
+          if (currentPage > 1) {
+            setPage((prev) => prev - 1);
+          }
+        }}
+        onNextPage={() => {
+          if (currentPage < lastPage) {
+            setPage((prev) => prev + 1);
+          }
+        }}
       />
     </div>
   );

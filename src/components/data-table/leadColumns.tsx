@@ -1,9 +1,19 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 
+import { getCurrentTenant } from "@/lib/tenant";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Lead } from "@/types/lead";
+
+const { currency: currencyCode } = getCurrentTenant();
+
+const currency = new Intl.NumberFormat(undefined, {
+  style: "currency",
+  currency: currencyCode,
+  maximumFractionDigits: 0,
+});
 
 function getStageVariant(stage: Lead["stage"]) {
   switch (stage) {
@@ -70,12 +80,11 @@ export function getLeadColumns(): ColumnDef<Lead>[] {
     {
       accessorKey: "budget",
       header: "Budget",
-      cell: ({ row }) =>
-        new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          maximumFractionDigits: 0,
-        }).format(row.original.budget),
+      cell: ({ row }) => {
+        const budget = row.original.budget;
+
+        return budget == null ? "—" : currency.format(budget);
+      },
     },
     {
       id: "actions",
