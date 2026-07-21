@@ -3,6 +3,7 @@ import {
   Users,
   CalendarDays,
   ShieldCheck,
+  Target,
   LogOut,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
@@ -13,6 +14,7 @@ import { getCurrentTenant } from "../lib/tenant";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
+  Leads: Target,
   Customers: Users,
   Reservations: CalendarDays,
   Users: ShieldCheck,
@@ -74,7 +76,8 @@ export function AppLayout() {
         <nav className="flex-1 space-y-2 p-4">
           {modules.map((module) => {
             const Icon =
-              iconMap[module.label as keyof typeof iconMap] ?? LayoutDashboard;
+              iconMap[module.label as keyof typeof iconMap] ??
+              LayoutDashboard;
 
             return (
               <NavLink
@@ -84,7 +87,6 @@ export function AppLayout() {
                 className={getNavLinkClasses}
               >
                 <Icon size={20} />
-
                 <span>{module.label}</span>
               </NavLink>
             );

@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PublicOnlyRoute } from "@/components/PublicOnlyRoute";
 import { CustomersPage } from "@/pages/CustomersPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import LeadsPage from "@/pages/LeadsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
@@ -23,9 +24,14 @@ function App() {
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
 
+          <Route path="leads" element={<LeadsPage />} />
+
           <Route path="customers" element={<CustomersPage />} />
 
-          <Route path="reservations" element={<ReservationsPage />} />
+          <Route
+            path="reservations"
+            element={<ReservationsPage />}
+          />
 
           <Route path="users" element={<UsersPage />} />
         </Route>

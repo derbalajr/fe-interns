@@ -12,6 +12,10 @@ export const APP_MODULES: AppModule[] = [
     path: "/",
   },
   {
+    label: "Leads",
+    path: "/leads",
+  },
+  {
     label: "Customers",
     path: "/customers",
   },
