@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DataTable } from "@/components/data-table/DataTable";
 import { getLeadColumns } from "@/components/data-table/leadColumns";
@@ -19,6 +19,21 @@ export default function LeadsPage() {
   });
 
   const columns = useMemo(() => getLeadColumns(), []);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
+
+  const handleStageChange = useCallback((value: string) => {
+    setStage(value);
+    setPage(1);
+  }, []);
+
+  const handleSourceChange = useCallback((value: string) => {
+    setSource(value);
+    setPage(1);
+  }, []);
 
   if (isLoading) {
     return (
@@ -41,7 +56,6 @@ export default function LeadsPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-4xl font-bold tracking-tight text-slate-900">
           Leads
@@ -52,26 +66,15 @@ export default function LeadsPage() {
         </p>
       </div>
 
-      {/* Toolbar */}
       <LeadToolbar
         search={search}
         stage={stage}
         source={source}
-        onSearchChange={(value) => {
-          setSearch(value);
-          setPage(1);
-        }}
-        onStageChange={(value) => {
-          setStage(value);
-          setPage(1);
-        }}
-        onSourceChange={(value) => {
-          setSource(value);
-          setPage(1);
-        }}
+        onSearchChange={handleSearchChange}
+        onStageChange={handleStageChange}
+        onSourceChange={handleSourceChange}
       />
 
-      {/* Data Table */}
       <DataTable
         columns={columns}
         data={data?.data ?? []}
@@ -80,12 +83,12 @@ export default function LeadsPage() {
         pageCount={lastPage}
         onPreviousPage={() => {
           if (currentPage > 1) {
-            setPage((prev) => prev - 1);
+            setPage((previousPage) => previousPage - 1);
           }
         }}
         onNextPage={() => {
           if (currentPage < lastPage) {
-            setPage((prev) => prev + 1);
+            setPage((previousPage) => previousPage + 1);
           }
         }}
       />

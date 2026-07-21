@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-
+import { LeadDetailsPage } from "@/pages/LeadDetailsPage";
 import { AppLayout } from "@/components/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PublicOnlyRoute } from "@/components/PublicOnlyRoute";
@@ -10,7 +10,6 @@ import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
 import UsersPage from "@/pages/UsersPage";
-
 function App() {
   return (
     <Routes>
@@ -25,13 +24,11 @@ function App() {
           <Route index element={<DashboardPage />} />
 
           <Route path="leads" element={<LeadsPage />} />
-
+          <Route path="leads" element={<LeadsPage />} />
+          <Route path="leads/:id" element={<LeadDetailsPage />} />
           <Route path="customers" element={<CustomersPage />} />
 
-          <Route
-            path="reservations"
-            element={<ReservationsPage />}
-          />
+          <Route path="reservations" element={<ReservationsPage />} />
 
           <Route path="users" element={<UsersPage />} />
         </Route>

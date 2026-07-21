@@ -20,7 +20,9 @@ export interface PaginationLink {
   label: string;
   active: boolean;
 }
-
+export interface LeadResponse {
+  data: Lead;
+}
 export interface PaginationMeta {
   current_page: number;
   from: number | null;
