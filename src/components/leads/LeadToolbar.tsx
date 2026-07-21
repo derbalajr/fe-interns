@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Plus, Search } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
+import { CreateLeadDialog } from "@/components/leads/CreateLeadDialog";
 import { Input } from "@/components/ui/input";
 
 interface LeadToolbarProps {
@@ -24,21 +23,16 @@ export function LeadToolbar({
   const [searchValue, setSearchValue] = useState(search);
 
   useEffect(() => {
-    setSearchValue(search);
-  }, [search]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
+    const timeout = window.setTimeout(() => {
       onSearchChange(searchValue);
     }, 300);
 
-    return () => clearTimeout(timeout);
+    return () => window.clearTimeout(timeout);
   }, [searchValue, onSearchChange]);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-center gap-3">
-        {/* Search */}
         <div className="relative w-full md:w-72">
           <Search
             size={18}
@@ -48,15 +42,14 @@ export function LeadToolbar({
           <Input
             placeholder="Search Leads..."
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(event) => setSearchValue(event.target.value)}
             className="h-11 rounded-xl border-slate-200 bg-white pl-10 shadow-none"
           />
         </div>
 
-        {/* Stage */}
         <select
           value={stage}
-          onChange={(e) => onStageChange(e.target.value)}
+          onChange={(event) => onStageChange(event.target.value)}
           className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-600 outline-none transition focus:border-slate-400"
         >
           <option value="">Stage: All</option>
@@ -66,10 +59,9 @@ export function LeadToolbar({
           <option value="Lost">Lost</option>
         </select>
 
-        {/* Source */}
         <select
           value={source}
-          onChange={(e) => onSourceChange(e.target.value)}
+          onChange={(event) => onSourceChange(event.target.value)}
           className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-600 outline-none transition focus:border-slate-400"
         >
           <option value="">Source: All</option>
@@ -80,14 +72,9 @@ export function LeadToolbar({
           <option value="Instagram">Instagram</option>
         </select>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* New Lead */}
-        <Button className="h-11 rounded-xl bg-slate-900 px-5 text-white hover:bg-slate-800">
-          <Plus size={16} className="mr-2" />
-          New Lead
-        </Button>
+        <CreateLeadDialog />
       </div>
     </div>
   );
