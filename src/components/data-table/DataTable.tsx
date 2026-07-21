@@ -20,16 +20,28 @@ type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   pageSize?: number;
+  manualPagination?: boolean;
+  currentPage?: number;
+  pageCount?: number;
+  onPreviousPage?: () => void;
+  onNextPage?: () => void;
 };
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   pageSize = 5,
+  manualPagination = false,
+  currentPage,
+  pageCount,
+  onPreviousPage,
+  onNextPage,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
+    manualPagination,
+    pageCount,
     initialState: {
       pagination: {
         pageIndex: 0,
@@ -37,12 +49,16 @@ export function DataTable<TData, TValue>({
       },
     },
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: manualPagination
+      ? undefined
+      : getPaginationRowModel(),
   });
 
-  const currentPage = table.getState().pagination.pageIndex + 1;
+  const displayedCurrentPage =
+    currentPage ?? table.getState().pagination.pageIndex + 1;
 
-  const totalPages = table.getPageCount();
+  const displayedTotalPages =
+    pageCount ?? Math.max(table.getPageCount(), 1);
 
   return (
     <div className="space-y-4">
@@ -95,7 +111,7 @@ export function DataTable<TData, TValue>({
 
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
-          Page {currentPage} of {Math.max(totalPages, 1)}
+          Page {displayedCurrentPage} of {displayedTotalPages}
         </p>
 
         <div className="flex gap-2">
@@ -103,8 +119,14 @@ export function DataTable<TData, TValue>({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() =>
+              manualPagination ? onPreviousPage?.() : table.previousPage()
+            }
+            disabled={
+              manualPagination
+                ? displayedCurrentPage <= 1
+                : !table.getCanPreviousPage()
+            }
           >
             Previous
           </Button>
@@ -113,8 +135,14 @@ export function DataTable<TData, TValue>({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() =>
+              manualPagination ? onNextPage?.() : table.nextPage()
+            }
+            disabled={
+              manualPagination
+                ? displayedCurrentPage >= displayedTotalPages
+                : !table.getCanNextPage()
+            }
           >
             Next
           </Button>
