@@ -42,6 +42,10 @@ function getServerError(error: unknown): string {
       return "The email or password is incorrect.";
     }
 
+    if (error.status === 403) {
+      return "This user does not belong to the selected workspace.";
+    }
+
     if (error.status === 422) {
       return "Please check the information you entered.";
     }
@@ -55,7 +59,7 @@ function getServerError(error: unknown): string {
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setToken } = useAuth();
+  const { setToken, setUser } = useAuth();
   const loginMutation = useLoginMutation();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -79,6 +83,7 @@ export function LoginPage() {
     control,
     name: "workspace",
   });
+
   const onSubmit = handleSubmit(async (values) => {
     try {
       const response = await loginMutation.mutateAsync(values);
@@ -92,6 +97,7 @@ export function LoginPage() {
       }
 
       setToken(token);
+      setUser(response.user);
 
       const state = location.state as RedirectState | null;
 
@@ -175,7 +181,7 @@ export function LoginPage() {
                     }
                     className={`rounded-lg px-4 py-2 text-sm text-[#dfdbce] transition sm:text-base ${
                       selectedWorkspace === "the-address"
-                        ? "border border-white/30 bg-white/15 font-medium shadow-[3px_2px_6px_rgba(0,0,0,0.25)]"
+                        ? "bg-white/20 font-medium text-white"
                         : "hover:bg-white/10"
                     }`}
                   >
@@ -191,7 +197,7 @@ export function LoginPage() {
                     }
                     className={`rounded-lg px-4 py-2 text-sm text-[#dfdbce] transition sm:text-base ${
                       selectedWorkspace === "marq"
-                        ? "border border-white/30 bg-white/15 font-medium shadow-[3px_2px_6px_rgba(0,0,0,0.25)]"
+                        ? "bg-white/20 font-medium text-white"
                         : "hover:bg-white/10"
                     }`}
                   >

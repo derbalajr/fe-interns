@@ -1,18 +1,9 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 
-import { getCurrentTenant } from "@/lib/tenant";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import type { Lead } from "@/types/lead";
-
-const { currency: currencyCode } = getCurrentTenant();
-
-const currency = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: currencyCode,
-  maximumFractionDigits: 0,
-});
 
 function getStageVariant(stage: Lead["stage"]) {
   switch (stage) {
@@ -33,7 +24,13 @@ function getStageVariant(stage: Lead["stage"]) {
   }
 }
 
-export function getLeadColumns(): ColumnDef<Lead>[] {
+export function getLeadColumns(currencyCode: string): ColumnDef<Lead>[] {
+  const currency = new Intl.NumberFormat("en-EG", {
+    style: "currency",
+    currency: currencyCode,
+    maximumFractionDigits: 0,
+  });
+
   return [
     {
       accessorKey: "name",

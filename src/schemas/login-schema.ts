@@ -12,7 +12,7 @@ export const loginSchema = z.object({
     .min(1, "Password is required.")
     .min(6, "Password must contain at least 6 characters."),
 
-  workspace: z.enum(["the-address", "marq"]),
+  workspace: z.enum(["the-address", "marq"]).optional(),
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;

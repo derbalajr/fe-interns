@@ -12,7 +12,9 @@ export async function loginRequest(
 }
 
 export async function getProfile(): Promise<User> {
-  return apiGet<User>("/me");
+  const response = await apiGet<any>("/me");
+
+  return response?.data?.id ? response.data : response;
 }
 
 export async function logoutRequest(): Promise<void> {
