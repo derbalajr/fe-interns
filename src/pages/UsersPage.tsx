@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUsersQuery } from "@/hooks/use-users-query";
 import type { User } from "@/types/user";
+import { Can } from "@/components/Can";
 
 export default function UsersPage() {
   const { data = [], isLoading, isError } = useUsersQuery();
@@ -75,10 +76,12 @@ export default function UsersPage() {
 
         <CreateUserDialog
           trigger={
-            <Button className="gap-2">
-              <Plus size={18} />
-              New User
-            </Button>
+            <Can permission="create-users">
+              <Button className="gap-2">
+                <Plus size={18} />
+                New User
+              </Button>
+            </Can>
           }
         />
       </div>

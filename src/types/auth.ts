@@ -22,8 +22,9 @@ export type LoginResponse = {
   user: User;
 };
 
-export type ProfileResponse =
-  | User
-  | {
-      user: User;
-    };
+export type ProfileResponse = {
+  data: User;
+  meta: {
+    success: boolean;
+  };
+};

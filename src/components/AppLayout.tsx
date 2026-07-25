@@ -11,6 +11,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { APP_MODULES } from "../constants/modules";
 import { useAuth } from "../context/AuthContext";
 import { getCurrentTenant } from "../lib/tenant";
+import { useCan } from "../hooks/use-can";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
@@ -32,17 +33,18 @@ const getNavLinkClasses = ({ isActive }: { isActive: boolean }) => {
 export function AppLayout() {
   const navigate = useNavigate();
   const { logout } = useAuth();
-
+  const { can } = useCan();
   const tenant = getCurrentTenant();
 
   const modules = APP_MODULES.filter((module) => {
-    if (!module.tenants) {
-      return true;
-    }
+  const tenantAllowed =
+    !module.tenants || module.tenants.includes(tenant.id);
 
-    return module.tenants.includes(tenant.id);
-  });
+  const permissionAllowed =
+    !module.permission || can(module.permission);
 
+  return tenantAllowed && permissionAllowed;
+});
   const handleLogout = async () => {
     await logout();
 

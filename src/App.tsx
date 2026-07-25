@@ -29,8 +29,9 @@ function App() {
           <Route path="customers" element={<CustomersPage />} />
 
           <Route path="reservations" element={<ReservationsPage />} />
-
+         <Route element={<ProtectedRoute permission="view-users" />}>
           <Route path="users" element={<UsersPage />} />
+         </Route>
         </Route>
       </Route>
 

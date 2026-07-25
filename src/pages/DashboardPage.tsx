@@ -3,6 +3,7 @@ import { useProfileQuery } from "../hooks/use-profile-query";
 
 export function DashboardPage() {
   const profileQuery = useProfileQuery();
+ console.log(JSON.stringify(profileQuery.data, null, 2));
 
   if (profileQuery.isPending) {
     return (
@@ -23,7 +24,7 @@ export function DashboardPage() {
   return (
     <section>
       <PageHeader
-        title={`Welcome, ${profileQuery.data.name}`}
+        title={`Welcome, ${profileQuery.data.data.name}`}
         description="Overview of your CRM activity."
       />
 
