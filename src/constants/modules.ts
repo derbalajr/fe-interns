@@ -14,6 +14,7 @@ export const APP_MODULES: AppModule[] = [
   {
     label: "Leads",
     path: "/leads",
+    tenants: ["tai"],
   },
   {
     label: "Customers",
@@ -25,8 +26,12 @@ export const APP_MODULES: AppModule[] = [
     tenants: ["marq"],
   },
   {
+    label: "Projects",
+    path: "/projects",
+    tenants: ["marq"],
+  },
+  {
     label: "Users",
     path: "/users",
-    tenants: ["marq"],
   },
 ];

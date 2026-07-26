@@ -1,6 +1,6 @@
 import { apiGet, apiPost } from "../lib/fetcher";
 
-import type { LoginCredentials, LoginResponse, User } from "../types/auth";
+import type { LoginCredentials, LoginResponse, ProfileResponse, User } from "../types/auth";
 
 export async function loginRequest(
   credentials: LoginCredentials,
@@ -12,7 +12,24 @@ export async function loginRequest(
 }
 
 export async function getProfile(): Promise<User> {
-  return apiGet<User>("/me");
+  const response = await apiGet<ProfileResponse>("/me");
+
+  if (
+    response &&
+    typeof response === "object" &&
+    "data" in response &&
+    response.data &&
+    typeof response.data === "object" &&
+    "id" in response.data
+  ) {
+    return response.data;
+  }
+
+  if (response && typeof response === "object" && "id" in response) {
+    return response;
+  }
+
+  throw new Error("Unexpected profile response shape.");
 }
 
 export async function logoutRequest(): Promise<void> {

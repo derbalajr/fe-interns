@@ -4,6 +4,7 @@ import { DataTable } from "@/components/data-table/DataTable";
 import { getLeadColumns } from "@/components/data-table/leadColumns";
 import { LeadToolbar } from "@/components/leads/LeadToolbar";
 import { useLeadsQuery } from "@/hooks/use-leads-query";
+import { useTenant } from "@/hooks/use-tenant";
 
 export default function LeadsPage() {
   const [page, setPage] = useState(1);
@@ -17,8 +18,9 @@ export default function LeadsPage() {
     stage,
     source,
   });
+  const { tenant } = useTenant();
 
-  const columns = useMemo(() => getLeadColumns(), []);
+  const columns = useMemo(() => getLeadColumns(tenant?.currency), [tenant?.currency]);
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);

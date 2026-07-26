@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -5,18 +6,20 @@ import {
   ShieldCheck,
   Target,
   LogOut,
+  Building2,
 } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 
 import { APP_MODULES } from "../constants/modules";
 import { useAuth } from "../context/AuthContext";
-import { getCurrentTenant } from "../lib/tenant";
+import { useTenant } from "../hooks/use-tenant";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
   Leads: Target,
   Customers: Users,
   Reservations: CalendarDays,
+  Projects: Building2,
   Users: ShieldCheck,
 };
 
@@ -31,9 +34,36 @@ const getNavLinkClasses = ({ isActive }: { isActive: boolean }) => {
 
 export function AppLayout() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const location = useLocation();
+  const { logout, user, isLoadingUser } = useAuth();
 
-  const tenant = getCurrentTenant();
+  const { tenant, isLoadingTenant } = useTenant();
+
+  useEffect(() => {
+    if (!isLoadingUser && !isLoadingTenant && user && !tenant) {
+      if (location.pathname !== "/login") {
+        navigate("/login", { replace: true });
+      }
+    }
+  }, [isLoadingUser, isLoadingTenant, user, tenant, location.pathname, navigate]);
+
+  // Wait until both Auth and Tenant hooks finish loading
+  if (isLoadingUser || isLoadingTenant) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 text-sm font-medium text-slate-600">
+        Loading your workspace...
+      </div>
+    );
+  }
+
+  // Fallback while redirecting
+  if (!tenant) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 text-sm font-medium text-slate-600">
+        No valid workspace assigned. Redirecting...
+      </div>
+    );
+  }
 
   const modules = APP_MODULES.filter((module) => {
     if (!module.tenants) {
@@ -45,10 +75,7 @@ export function AppLayout() {
 
   const handleLogout = async () => {
     await logout();
-
-    navigate("/login", {
-      replace: true,
-    });
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -58,15 +85,12 @@ export function AppLayout() {
         {/* Logo */}
         <div className="border-b border-slate-200 p-6">
           <div className="flex items-center gap-4">
-            <div
-              className={`flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold text-white ${tenant.primaryColor}`}
-            >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white">
               {tenant.logoText}
             </div>
 
             <div>
               <h1 className="text-lg font-bold">{tenant.displayName}</h1>
-
               <p className="text-sm text-slate-500">{tenant.shortName}</p>
             </div>
           </div>
@@ -76,8 +100,7 @@ export function AppLayout() {
         <nav className="flex-1 space-y-2 p-4">
           {modules.map((module) => {
             const Icon =
-              iconMap[module.label as keyof typeof iconMap] ??
-              LayoutDashboard;
+              iconMap[module.label as keyof typeof iconMap] ?? LayoutDashboard;
 
             return (
               <NavLink
@@ -106,13 +129,12 @@ export function AppLayout() {
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Main Content */}
       <div className="flex flex-1 flex-col">
         {/* Header */}
         <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
           <div>
             <h2 className="text-2xl font-bold">{tenant.displayName}</h2>
-
             <p className="text-sm text-slate-500">
               Customer Relationship Management
             </p>
@@ -120,12 +142,12 @@ export function AppLayout() {
 
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 font-semibold text-white">
-              S
+              {user?.name?.[0]?.toUpperCase() ?? "U"}
             </div>
           </div>
         </header>
 
-        {/* Content */}
+        {/* Content Body */}
         <main className="flex-1 overflow-auto bg-slate-100 p-8">
           <Outlet />
         </main>

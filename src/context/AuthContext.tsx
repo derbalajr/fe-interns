@@ -2,19 +2,25 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { logoutRequest } from "../api/auth";
-import { AUTH_TOKEN_KEY } from "../constants/auth";
+import { ApiError } from "../lib/fetcher";
+import { getProfile, logoutRequest } from "../api/auth";
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "../constants/auth";
+import type { User } from "../types/auth";
 
 type AuthContextValue = {
   token: string | null;
+  user: User | null;
   isAuthenticated: boolean;
+  isLoadingUser: boolean;
   setToken: (token: string) => void;
+  setUser: (user: User | null) => void;
   logout: () => Promise<void>;
 };
 
@@ -24,8 +30,37 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
+/**
+ * Single source of truth to safely extract and type a User object 
+ * whether it's wrapped in a Laravel Resource `{ data: { id, ... } }` or raw `{ id, ... }`.
+ */
+export function unwrapUser(input: unknown): User | null {
+  if (!input || typeof input !== "object") return null;
+
+  // Laravel API Resource wrapper check: { data: { id: ... } }
+  if ("data" in input && input.data && typeof input.data === "object" && "id" in input.data) {
+    return input.data as User;
+  }
+
+  // Flat User object check: { id: ... }
+  if ("id" in input) {
+    return input as User;
+  }
+
+  return null;
+}
+
 function readStoredToken(): string | null {
   return localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+function readStoredUser(): User | null {
+  try {
+    const raw = localStorage.getItem(AUTH_USER_KEY);
+    return raw ? unwrapUser(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -33,10 +68,65 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const [token, setTokenState] = useState<string | null>(readStoredToken);
 
+  // 1. INSTANT LOAD: Read initial user state synchronously from local storage
+  const [user, setUserState] = useState<User | null>(readStoredUser);
+
+  // 2. Only show loading state if a token exists BUT we have no cached user in storage
+  const [isLoadingUser, setIsLoadingUser] = useState<boolean>(() => {
+    return Boolean(readStoredToken()) && !readStoredUser();
+  });
+
   const setToken = useCallback((newToken: string) => {
     localStorage.setItem(AUTH_TOKEN_KEY, newToken);
     setTokenState(newToken);
   }, []);
+
+  // Centralized state + localStorage updater
+  const setUser = useCallback((nextUser: User | null) => {
+    const cleanUser = unwrapUser(nextUser);
+
+    if (cleanUser) {
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(cleanUser));
+    } else {
+      localStorage.removeItem(AUTH_USER_KEY);
+    }
+
+    setUserState(cleanUser);
+    setIsLoadingUser(false);
+  }, []);
+
+  // 3. BACKGROUND REVALIDATION: Refresh user in background without blocking rendering
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      return;
+    }
+
+    let isActive = true;
+
+    getProfile()
+      .then((res) => {
+        if (isActive) {
+          setUser(res); // Handles unwrapping, state updates, and localStorage sync in one place
+        }
+      })
+      .catch((error: unknown) => {
+        if (isActive && error instanceof ApiError && error.status === 401) {
+          localStorage.removeItem(AUTH_TOKEN_KEY);
+          setUser(null);
+          setTokenState(null);
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsLoadingUser(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [token, setUser]);
 
   const logout = useCallback(async () => {
     try {
@@ -44,22 +134,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await logoutRequest();
       }
     } catch {
-      // Clear the local session even if the backend logout fails.
+      // Clear local session even if backend endpoint fails
     } finally {
       localStorage.removeItem(AUTH_TOKEN_KEY);
+      setUser(null);
       setTokenState(null);
       queryClient.clear();
     }
-  }, [queryClient, token]);
+  }, [queryClient, token, setUser]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       token,
-      isAuthenticated: Boolean(token),
+      user,
+      isAuthenticated: Boolean(token && user),
+      isLoadingUser,
       setToken,
+      setUser,
       logout,
     }),
-    [logout, setToken, token],
+    [isLoadingUser, logout, setToken, setUser, token, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

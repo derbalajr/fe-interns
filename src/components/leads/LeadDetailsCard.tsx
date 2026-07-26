@@ -1,15 +1,9 @@
-import { getCurrentTenant } from "@/lib/tenant";
+import { useMemo } from "react";
+
+import { useTenant } from "@/hooks/use-tenant";
 import type { Lead } from "@/types/lead";
 
 import { LeadPanel } from "./LeadPanel";
-
-const { currency: currencyCode } = getCurrentTenant();
-
-const currencyFormatter = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: currencyCode,
-  maximumFractionDigits: 0,
-});
 
 type LeadDetailsCardProps = {
   lead: Lead;
@@ -40,6 +34,17 @@ function DetailRow({ label, value, href }: DetailRowProps) {
 }
 
 export function LeadDetailsCard({ lead }: LeadDetailsCardProps) {
+  const { tenant } = useTenant();
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat("en-EG", {
+        style: "currency",
+        currency: tenant?.currency || "EGP",
+        maximumFractionDigits: 0,
+      }),
+    [tenant?.currency],
+  );
+
   const formattedBudget =
     lead.budget == null
       ? "Not specified"
