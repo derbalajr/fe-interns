@@ -27,7 +27,7 @@ function getStageVariant(stage: Lead["stage"]) {
 export function getLeadColumns(currencyCode: string): ColumnDef<Lead>[] {
   const currency = new Intl.NumberFormat("en-EG", {
     style: "currency",
-    currency: currencyCode,
+    currency: currencyCode || "EGP",
     maximumFractionDigits: 0,
   });
 

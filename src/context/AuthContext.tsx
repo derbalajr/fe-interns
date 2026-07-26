@@ -9,12 +9,10 @@ import {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { ApiError } from "../lib/fetcher";
 import { getProfile, logoutRequest } from "../api/auth";
-import { AUTH_TOKEN_KEY } from "../constants/auth";
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "../constants/auth";
 import type { User } from "../types/auth";
-
-// Constant for caching the user object locally
-const AUTH_USER_KEY = "auth_user";
 
 type AuthContextValue = {
   token: string | null;
@@ -33,14 +31,23 @@ type AuthProviderProps = {
 };
 
 /**
- * Safely extracts the user object if wrapped inside a Laravel Resource { data: { id, name, ... } }
+ * Single source of truth to safely extract and type a User object 
+ * whether it's wrapped in a Laravel Resource `{ data: { id, ... } }` or raw `{ id, ... }`.
  */
-function unwrapUser(data: any): User | null {
-  if (!data) return null;
-  if (typeof data === "object" && "data" in data && data.data?.id) {
-    return data.data;
+export function unwrapUser(input: unknown): User | null {
+  if (!input || typeof input !== "object") return null;
+
+  // Laravel API Resource wrapper check: { data: { id: ... } }
+  if ("data" in input && input.data && typeof input.data === "object" && "id" in input.data) {
+    return input.data as User;
   }
-  return data;
+
+  // Flat User object check: { id: ... }
+  if ("id" in input) {
+    return input as User;
+  }
+
+  return null;
 }
 
 function readStoredToken(): string | null {
@@ -74,7 +81,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setTokenState(newToken);
   }, []);
 
-  const setUser = useCallback((nextUser: User | null | any) => {
+  // Centralized state + localStorage updater
+  const setUser = useCallback((nextUser: User | null) => {
     const cleanUser = unwrapUser(nextUser);
 
     if (cleanUser) {
@@ -91,31 +99,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     if (!token) {
       setUser(null);
-      setIsLoadingUser(false);
       return;
     }
 
     let isActive = true;
 
     getProfile()
-      .then((res: any) => {
-        if (!isActive) return;
-
-        const cleanUser = unwrapUser(res);
-        setUserState(cleanUser);
-
-        if (cleanUser) {
-          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(cleanUser));
+      .then((res) => {
+        if (isActive) {
+          setUser(res); // Handles unwrapping, state updates, and localStorage sync in one place
         }
       })
-      .catch((error: any) => {
-        console.error("Failed to revalidate profile:", error);
-        // If token is invalid/expired (401), wipe session
-        if (isActive && error?.status === 401) {
+      .catch((error: unknown) => {
+        if (isActive && error instanceof ApiError && error.status === 401) {
           localStorage.removeItem(AUTH_TOKEN_KEY);
-          localStorage.removeItem(AUTH_USER_KEY);
+          setUser(null);
           setTokenState(null);
-          setUserState(null);
         }
       })
       .finally(() => {
@@ -138,13 +137,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Clear local session even if backend endpoint fails
     } finally {
       localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(AUTH_USER_KEY);
+      setUser(null);
       setTokenState(null);
-      setUserState(null);
-      setIsLoadingUser(false);
       queryClient.clear();
     }
-  }, [queryClient, token]);
+  }, [queryClient, token, setUser]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

@@ -1,20 +1,17 @@
+import { useMemo } from "react";
+
 import { useAuth } from "@/context/AuthContext";
-import { TENANT_CONFIGS, type TenantId } from "@/constants/tenants";
+import { getCurrentTenant } from "@/lib/tenant";
 
 export function useTenant() {
   const { user, isLoadingUser } = useAuth();
 
-  if (isLoadingUser) {
-    return { tenant: null, isLoadingTenant: true };
-  }
+  return useMemo(() => {
+    if (isLoadingUser) {
+      return { tenant: null, isLoadingTenant: true };
+    }
 
-  if (!user?.tenant) {
-    return { tenant: null, isLoadingTenant: false };
-  }
-
-  // Direct lookup using "tai" or "marq" from user.tenant
-  const tenantKey = user.tenant as TenantId;
-  const tenantConfig = TENANT_CONFIGS[tenantKey] ?? null;
-
-  return { tenant: tenantConfig, isLoadingTenant: false };
+    const tenant = getCurrentTenant(user?.tenant);
+    return { tenant, isLoadingTenant: false };
+  }, [isLoadingUser, user?.tenant]);
 }

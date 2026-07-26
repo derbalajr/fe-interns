@@ -28,4 +28,3 @@ export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
   },
 };
 
-export const DEFAULT_TENANT_ID: TenantId = "tai";
