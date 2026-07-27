@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
-
+import { AssignAgentDialog } from "@/components/leads/AssignAgentDialog";
+import { UpdateStageDialog } from "@/components/leads/UpdateStageDialog";
 import { EditLeadDialog } from "@/components/leads/EditLeadDialog";
 import { Button } from "@/components/ui/button";
 import type { Lead } from "@/types/lead";
@@ -104,17 +105,9 @@ export function LeadPipeline({ lead }: LeadPipelineProps) {
       )}
 
       <div className="mt-7 flex flex-wrap gap-3">
-        <Button
-          type="button"
-          disabled
-          className="rounded-xl bg-stone-200 text-slate-700"
-        >
-          Advance Stage
-        </Button>
+        <UpdateStageDialog lead={lead} />
 
-        <Button type="button" variant="outline" disabled className="rounded-xl">
-          Reassign Agent
-        </Button>
+        <AssignAgentDialog lead={lead} />
 
         <EditLeadDialog lead={lead} />
 

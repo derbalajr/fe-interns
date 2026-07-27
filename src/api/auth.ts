@@ -1,6 +1,26 @@
 import { apiGet, apiPost } from "../lib/fetcher";
 
-import type { LoginCredentials, LoginResponse, ProfileResponse, User } from "../types/auth";
+import type {
+  LoginCredentials,
+  LoginResponse,
+  ProfileResponse,
+  User,
+} from "../types/auth";
+
+function isUser(value: unknown): value is User {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  return (
+    "id" in value &&
+    "name" in value &&
+    "email" in value &&
+    typeof value.id === "number" &&
+    typeof value.name === "string" &&
+    typeof value.email === "string"
+  );
+}
 
 export async function loginRequest(
   credentials: LoginCredentials,
@@ -18,14 +38,12 @@ export async function getProfile(): Promise<User> {
     response &&
     typeof response === "object" &&
     "data" in response &&
-    response.data &&
-    typeof response.data === "object" &&
-    "id" in response.data
+    isUser(response.data)
   ) {
     return response.data;
   }
 
-  if (response && typeof response === "object" && "id" in response) {
+  if (isUser(response)) {
     return response;
   }
 

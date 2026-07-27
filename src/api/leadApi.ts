@@ -1,7 +1,14 @@
-import { apiGet, apiPost, apiPut } from "@/lib/fetcher";
+import { apiGet, apiPatch, apiPost, apiPut } from "@/lib/fetcher";
 
 import type { LeadPayload } from "@/schemas/lead-schema";
 import type { LeadResponse, LeadsResponse } from "@/types/lead";
+
+export type UpdateLeadPayload = Partial<LeadPayload>;
+
+export type AssignLeadPayload = {
+  agent_id: number | null;
+};
+
 export function getLeads(page = 1, search = "", stage = "", source = "") {
   const params = new URLSearchParams();
 
@@ -30,6 +37,10 @@ export function createLead(data: LeadPayload) {
   return apiPost<LeadResponse, LeadPayload>("/leads", data);
 }
 
-export function updateLead(id: number, data: LeadPayload) {
-  return apiPut<LeadResponse, LeadPayload>(`/leads/${id}`, data);
+export function updateLead(id: number, data: UpdateLeadPayload) {
+  return apiPut<LeadResponse, UpdateLeadPayload>(`/leads/${id}`, data);
+}
+
+export function assignLead(id: number, data: AssignLeadPayload) {
+  return apiPatch<LeadResponse, AssignLeadPayload>(`/leads/${id}/assign`, data);
 }
