@@ -1,10 +1,14 @@
+import type {
+  LeadSource,
+  LeadStage,
+} from "@/schemas/lead-schema";
 export interface Lead {
   id: number;
   name: string;
   email: string;
   phone: string;
-  source: string;
-  stage: string;
+  source: LeadSource;
+stage: LeadStage;
   budget: number | null;
   agent: {
     id: number;

@@ -1,4 +1,8 @@
-import { useCallback, useMemo, useState } from "react";
+import {
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
 import { DataTable } from "@/components/data-table/DataTable";
 import { getLeadColumns } from "@/components/data-table/leadColumns";
@@ -18,9 +22,13 @@ export default function LeadsPage() {
     stage,
     source,
   });
+
   const { tenant } = useTenant();
 
-  const columns = useMemo(() => getLeadColumns(tenant?.currency), [tenant?.currency]);
+  const columns = useMemo(
+    () => getLeadColumns(tenant?.currency ?? "USD"),
+    [tenant?.currency],
+  );
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);

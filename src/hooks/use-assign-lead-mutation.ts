@@ -1,19 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { updateLead, type UpdateLeadPayload } from "@/api/leadApi";
+import { assignLead, type AssignLeadPayload } from "@/api/leadApi";
 import { leadQueryKey } from "@/hooks/use-lead-query";
 import { leadsQueryKey } from "@/hooks/use-leads-query";
 
-type UpdateLeadInput = {
+type AssignLeadInput = {
   id: number;
-  data: UpdateLeadPayload;
+  data: AssignLeadPayload;
 };
 
-export function useUpdateLeadMutation() {
+export function useAssignLeadMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: UpdateLeadInput) => updateLead(id, data),
+    mutationFn: ({ id, data }: AssignLeadInput) => assignLead(id, data),
 
     onSuccess: async (_, variables) => {
       await Promise.all([
