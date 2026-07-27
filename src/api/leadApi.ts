@@ -3,8 +3,7 @@ import { apiGet, apiPatch, apiPost, apiPut } from "@/lib/fetcher";
 import type { LeadPayload } from "@/schemas/lead-schema";
 import type { LeadResponse, LeadsResponse } from "@/types/lead";
 
-export type UpdateLeadPayload = Partial<LeadPayload>;
-
+export type UpdateLeadPayload = LeadPayload;
 export type AssignLeadPayload = {
   agent_id: number | null;
 };

@@ -13,7 +13,6 @@ import { ApiError } from "../lib/fetcher";
 import { getProfile, logoutRequest } from "../api/auth";
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "../constants/auth";
 import type { User } from "../types/auth";
-
 type AuthContextValue = {
   token: string | null;
   user: User | null;
@@ -31,14 +30,19 @@ type AuthProviderProps = {
 };
 
 /**
- * Single source of truth to safely extract and type a User object 
+ * Single source of truth to safely extract and type a User object
  * whether it's wrapped in a Laravel Resource `{ data: { id, ... } }` or raw `{ id, ... }`.
  */
 export function unwrapUser(input: unknown): User | null {
   if (!input || typeof input !== "object") return null;
 
   // Laravel API Resource wrapper check: { data: { id: ... } }
-  if ("data" in input && input.data && typeof input.data === "object" && "id" in input.data) {
+  if (
+    "data" in input &&
+    input.data &&
+    typeof input.data === "object" &&
+    "id" in input.data
+  ) {
     return input.data as User;
   }
 
@@ -69,9 +73,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setTokenState] = useState<string | null>(readStoredToken);
 
   // 1. INSTANT LOAD: Read initial user state synchronously from local storage
-const [user, setUserState] = useState<User | null>(() =>
-  readStoredToken() ? readStoredUser() : null,
-);
+  const [user, setUserState] = useState<User | null>(() =>
+    readStoredToken() ? readStoredUser() : null,
+  );
   // 2. Only show loading state if a token exists BUT we have no cached user in storage
   const [isLoadingUser, setIsLoadingUser] = useState<boolean>(() => {
     return Boolean(readStoredToken()) && !readStoredUser();
@@ -95,39 +99,44 @@ const [user, setUserState] = useState<User | null>(() =>
     setUserState(cleanUser);
     setIsLoadingUser(false);
   }, []);
+  const clearSession = useCallback(() => {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
 
+    setTokenState(null);
+    setUserState(null);
+    setIsLoadingUser(false);
+  }, []);
   // 3. BACKGROUND REVALIDATION: Refresh user in background without blocking rendering
 
-   useEffect(() => {
-  if (!token) {
-    return;
-  }
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
 
-  let isActive = true;
+    let isActive = true;
 
-  getProfile()
-    .then((res) => {
-      if (isActive) {
-        setUser(res);
-      }
-    })
-    .catch((error: unknown) => {
-      if (isActive && error instanceof ApiError && error.status === 401) {
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        setTokenState(null);
-        setUser(null);
-      }
-    })
-    .finally(() => {
-      if (isActive) {
-        setIsLoadingUser(false);
-      }
-    });
+    getProfile()
+      .then((response) => {
+        if (isActive) {
+          setUser(response);
+        }
+      })
+      .catch((error: unknown) => {
+        if (isActive && error instanceof ApiError && error.status === 401) {
+          clearSession();
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsLoadingUser(false);
+        }
+      });
 
-  return () => {
-    isActive = false;
-  };
-}, [token, setUser]);
+    return () => {
+      isActive = false;
+    };
+  }, [clearSession, setUser, token]);
 
   const logout = useCallback(async () => {
     try {
@@ -135,26 +144,24 @@ const [user, setUserState] = useState<User | null>(() =>
         await logoutRequest();
       }
     } catch {
-      // Clear local session even if backend endpoint fails
+      // Clear the local session even if the backend request fails.
     } finally {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      setUser(null);
-      setTokenState(null);
+      clearSession();
       queryClient.clear();
     }
-  }, [queryClient, token, setUser]);
-
+  }, [clearSession, queryClient, token]);
+  const authenticatedUser = token ? user : null;
   const value = useMemo<AuthContextValue>(
     () => ({
       token,
-      user,
-      isAuthenticated: Boolean(token && user),
+      user: authenticatedUser,
+      isAuthenticated: Boolean(token && authenticatedUser),
       isLoadingUser,
       setToken,
       setUser,
       logout,
     }),
-    [isLoadingUser, logout, setToken, setUser, token, user],
+    [authenticatedUser, isLoadingUser, logout, setToken, setUser, token],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

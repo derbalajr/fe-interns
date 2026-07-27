@@ -7,16 +7,16 @@ import type { Lead } from "@/types/lead";
 
 function getStageVariant(stage: Lead["stage"]) {
   switch (stage) {
-    case "New":
+    case "new":
       return "secondary";
 
-    case "Qualified":
+    case "qualified":
       return "default";
 
-    case "Contacted":
+    case "contacted":
       return "outline";
 
-    case "Lost":
+    case "lost":
       return "destructive";
 
     default:

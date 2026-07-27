@@ -74,7 +74,12 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
     await updateMutation.mutateAsync({
       id: lead.id,
       data: {
+        name: lead.name,
+        email: lead.email,
+        phone: lead.phone,
+        source: lead.source,
         stage,
+        budget: lead.budget,
       },
     });
 
