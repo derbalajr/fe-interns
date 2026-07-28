@@ -1,4 +1,8 @@
-import type { LeadSource, LeadStage } from "@/schemas/lead-schema";
+import type {
+  LeadSource,
+  LeadStage,
+} from "@/schemas/lead-schema";
+
 export interface Lead {
   id: number;
   name: string;
@@ -21,9 +25,11 @@ export interface PaginationLink {
   label: string;
   active: boolean;
 }
+
 export interface LeadResponse {
   data: Lead;
 }
+
 export interface PaginationMeta {
   current_page: number;
   from: number | null;

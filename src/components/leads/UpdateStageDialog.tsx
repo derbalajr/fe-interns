@@ -16,39 +16,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUpdateLeadMutation } from "@/hooks/use-update-lead-mutation";
+import { useChangeLeadStage } from "@/hooks/use-change-lead-stage";
 import type { LeadFormValues } from "@/schemas/lead-schema";
 import type { Lead } from "@/types/lead";
 
-const stageOptions: Array<{
-  label: string;
-  value: LeadFormValues["stage"];
-}> = [
-  {
-    label: "New",
-    value: "new",
-  },
-  {
-    label: "Contacted",
-    value: "contacted",
-  },
-  {
-    label: "Qualified",
-    value: "qualified",
-  },
-  {
-    label: "Negotiation",
-    value: "negotiation",
-  },
-  {
-    label: "Won",
-    value: "won",
-  },
-  {
-    label: "Lost",
-    value: "lost",
-  },
-];
+const stageLabels: Record<string, string> = {
+  contacted: "Contacted",
+  qualified: "Qualified",
+  unqualified: "Unqualified",
+};
+
+const allowedTransitions: Record<string, LeadFormValues["stage"][]> = {
+  new: ["contacted"],
+  contacted: ["qualified", "unqualified"],
+  qualified: ["unqualified"],
+  unqualified: [],
+};
 
 type UpdateStageDialogProps = {
   lead: Lead;
@@ -56,30 +39,31 @@ type UpdateStageDialogProps = {
 
 export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
   const [open, setOpen] = useState(false);
-  const [stage, setStage] = useState<LeadFormValues["stage"]>(
-    lead.stage as LeadFormValues["stage"],
-  );
+  const [stage, setStage] = useState<LeadFormValues["stage"] | "">("");
 
-  const updateMutation = useUpdateLeadMutation();
+  const changeStageMutation = useChangeLeadStage();
+
+  const availableStages =
+    allowedTransitions[lead.stage] ?? [];
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
 
     if (nextOpen) {
-      setStage(lead.stage as LeadFormValues["stage"]);
+      setStage("");
+      changeStageMutation.reset();
     }
   };
 
   const handleSubmit = async () => {
-    await updateMutation.mutateAsync({
-      id: lead.id,
+    if (!stage) {
+      return;
+    }
+
+    await changeStageMutation.mutateAsync({
+      leadId: lead.id,
       data: {
-        name: lead.name,
-        email: lead.email,
-        phone: lead.phone,
-        source: lead.source,
         stage,
-        budget: lead.budget,
       },
     });
 
@@ -87,13 +71,21 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
   };
 
   const errorMessage =
-    updateMutation.error instanceof Error ? updateMutation.error.message : null;
+    changeStageMutation.error instanceof Error
+      ? changeStageMutation.error.message
+      : null;
+
+  const hasAvailableTransitions = availableStages.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
-          <Button type="button" className="rounded-xl">
+          <Button
+            type="button"
+            className="rounded-xl"
+            disabled={!hasAvailableTransitions}
+          >
             Change Stage
           </Button>
         }
@@ -109,31 +101,40 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
         </DialogHeader>
 
         <div className="space-y-5">
-          <div className="space-y-2">
-            <label htmlFor="lead-stage" className="text-sm font-medium">
-              Stage
-            </label>
+          {hasAvailableTransitions ? (
+            <div className="space-y-2">
+              <label
+                htmlFor="lead-stage"
+                className="text-sm font-medium"
+              >
+                Stage
+              </label>
 
-            <Select
-              value={stage}
-              onValueChange={(value) =>
-                setStage(value as LeadFormValues["stage"])
-              }
-              disabled={updateMutation.isPending}
-            >
-              <SelectTrigger id="lead-stage">
-                <SelectValue placeholder="Select a stage" />
-              </SelectTrigger>
+              <Select
+                value={stage}
+                onValueChange={(value) =>
+                  setStage(value as LeadFormValues["stage"])
+                }
+                disabled={changeStageMutation.isPending}
+              >
+                <SelectTrigger id="lead-stage">
+                  <SelectValue placeholder="Select the next stage" />
+                </SelectTrigger>
 
-              <SelectContent>
-                {stageOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectContent>
+                  {availableStages.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {stageLabels[value] ?? value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+              No further stage transitions are available for this lead.
+            </p>
+          )}
 
           {errorMessage && (
             <p
@@ -148,19 +149,26 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
             <Button
               type="button"
               variant="outline"
-              disabled={updateMutation.isPending}
+              disabled={changeStageMutation.isPending}
               onClick={() => setOpen(false)}
             >
               Cancel
             </Button>
 
-            <Button
-              type="button"
-              disabled={updateMutation.isPending || stage === lead.stage}
-              onClick={handleSubmit}
-            >
-              {updateMutation.isPending ? "Updating..." : "Update Stage"}
-            </Button>
+            {hasAvailableTransitions && (
+              <Button
+                type="button"
+                disabled={
+                  changeStageMutation.isPending ||
+                  !stage
+                }
+                onClick={handleSubmit}
+              >
+                {changeStageMutation.isPending
+                  ? "Updating..."
+                  : "Update Stage"}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
