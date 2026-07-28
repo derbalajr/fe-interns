@@ -22,10 +22,6 @@ export const APP_MODULES: AppModule[] = [
     tenants: ["tai"],
   },
   {
-    label: "Customers",
-    path: "/customers",
-  },
-  {
     label: "Reservations",
     path: "/reservations",
     tenants: ["marq"],
