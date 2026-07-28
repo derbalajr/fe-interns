@@ -31,7 +31,7 @@ export type UnitsResponse = {
     prev?: string | null;
     next?: string | null;
   };
-  meta?: {
+  meta: {
     current_page: number;
     from: number | null;
     last_page: number;

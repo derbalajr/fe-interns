@@ -4,14 +4,23 @@ import type { LeadPayload } from "@/schemas/lead-schema";
 import type { LeadResponse, LeadsResponse } from "@/types/lead";
 
 export type UpdateLeadPayload = LeadPayload;
+
 export type AssignLeadPayload = {
   agent_id: number | null;
 };
 
-export function getLeads(page = 1, search = "", stage = "", source = "") {
+const PER_PAGE = 100;
+
+export function getLeads(
+  page = 1,
+  search = "",
+  stage = "",
+  source = "",
+) {
   const params = new URLSearchParams();
 
   params.set("page", page.toString());
+  params.set("per_page", PER_PAGE.toString());
 
   if (search) {
     params.set("search", search);
@@ -36,10 +45,22 @@ export function createLead(data: LeadPayload) {
   return apiPost<LeadResponse, LeadPayload>("/leads", data);
 }
 
-export function updateLead(id: number, data: UpdateLeadPayload) {
-  return apiPut<LeadResponse, UpdateLeadPayload>(`/leads/${id}`, data);
+export function updateLead(
+  id: number,
+  data: UpdateLeadPayload,
+) {
+  return apiPut<LeadResponse, UpdateLeadPayload>(
+    `/leads/${id}`,
+    data,
+  );
 }
 
-export function assignLead(id: number, data: AssignLeadPayload) {
-  return apiPatch<LeadResponse, AssignLeadPayload>(`/leads/${id}/assign`, data);
+export function assignLead(
+  id: number,
+  data: AssignLeadPayload,
+) {
+  return apiPatch<LeadResponse, AssignLeadPayload>(
+    `/leads/${id}/assign`,
+    data,
+  );
 }

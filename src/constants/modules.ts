@@ -17,6 +17,11 @@ export const APP_MODULES: AppModule[] = [
     tenants: ["tai"],
   },
   {
+    label: "Deals",
+    path: "/deals",
+    tenants: ["tai"],
+  },
+  {
     label: "Customers",
     path: "/customers",
   },

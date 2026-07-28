@@ -7,6 +7,7 @@ import {
   Target,
   LogOut,
   Building2,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 
@@ -17,6 +18,7 @@ import { useTenant } from "../hooks/use-tenant";
 const iconMap = {
   Dashboard: LayoutDashboard,
   Leads: Target,
+  Deals: BriefcaseBusiness,
   Customers: Users,
   Reservations: CalendarDays,
   Projects: Building2,
@@ -54,7 +56,6 @@ export function AppLayout() {
     navigate,
   ]);
 
-  // Wait until both Auth and Tenant hooks finish loading
   if (isLoadingUser || isLoadingTenant) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100 text-sm font-medium text-slate-600">
@@ -63,7 +64,6 @@ export function AppLayout() {
     );
   }
 
-  // Fallback while redirecting
   if (!tenant) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100 text-sm font-medium text-slate-600">
@@ -107,7 +107,8 @@ export function AppLayout() {
         <nav className="flex-1 space-y-2 p-4">
           {modules.map((module) => {
             const Icon =
-              iconMap[module.label as keyof typeof iconMap] ?? LayoutDashboard;
+              iconMap[module.label as keyof typeof iconMap] ??
+              LayoutDashboard;
 
             return (
               <NavLink
