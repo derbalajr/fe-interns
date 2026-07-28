@@ -14,7 +14,10 @@ export type DealStage =
 
 export const dealSchema = z.object({
   lead_id: z.preprocess(
-    (value) => Number(value),
+    (value) =>
+      value === "" || value == null
+        ? undefined
+        : Number(value),
     z.number({
       message: "Select a lead",
     }),
@@ -36,7 +39,10 @@ export const dealSchema = z.object({
   ),
 
   agent_id: z.preprocess(
-    (value) => Number(value),
+    (value) =>
+      value === "" || value == null
+        ? undefined
+        : Number(value),
     z.number({
       message: "Select an agent",
     }),

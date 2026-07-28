@@ -3,11 +3,7 @@ export function formatCurrency(value: number) {
     return `EGP ${(value / 1_000_000).toFixed(1)}M`;
   }
 
-  if (value >= 1000) {
-    return `EGP ${(value / 1000).toFixed(0)}K`;
-  }
-
-  return `EGP ${value}`;
+  return `EGP ${value.toLocaleString("en-US")}`;
 }
 
 export function formatDealDate(date?: string | null) {
