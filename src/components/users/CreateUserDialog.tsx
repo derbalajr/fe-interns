@@ -15,9 +15,7 @@ type CreateUserDialogProps = {
   trigger: ReactElement;
 };
 
-export function CreateUserDialog({
-  trigger,
-}: CreateUserDialogProps) {
+export function CreateUserDialog({ trigger }: CreateUserDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -33,9 +31,7 @@ export function CreateUserDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <UserForm
-          onSuccess={() => setOpen(false)}
-        />
+        <UserForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
