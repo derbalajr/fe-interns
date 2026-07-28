@@ -5,7 +5,6 @@ import {
   CalendarDays,
   ShieldCheck,
   Target,
-  LogOut,
   Building2,
   BriefcaseBusiness,
 } from "lucide-react";
@@ -25,20 +24,11 @@ const iconMap = {
   Users: ShieldCheck,
 };
 
-const getNavLinkClasses = ({ isActive }: { isActive: boolean }) => {
-  const base =
-    "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200";
-
-  return isActive
-    ? `${base} bg-slate-900 text-white shadow-md`
-    : `${base} text-slate-600 hover:bg-slate-100 hover:text-slate-900`;
-};
-
 export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, user, isLoadingUser } = useAuth();
 
+  const { logout, user, isLoadingUser } = useAuth();
   const { tenant, isLoadingTenant } = useTenant();
 
   useEffect(() => {
@@ -86,80 +76,78 @@ export function AppLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
-      {/* Sidebar */}
-      <aside className="flex w-72 flex-col border-r border-slate-200 bg-white">
-        {/* Logo */}
-        <div className="border-b border-slate-200 p-6">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white">
+    <div className="min-h-screen bg-slate-100">
+      {/* Top Navigation */}
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white">
+        <div className="flex h-16 items-center px-8">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 font-bold text-white">
               {tenant.logoText}
             </div>
 
             <div>
-              <h1 className="text-lg font-bold">{tenant.displayName}</h1>
-              <p className="text-sm text-slate-500">{tenant.shortName}</p>
+              <h1 className="text-sm font-bold text-slate-900">
+                {tenant.displayName}
+              </h1>
+              <p className="text-xs text-slate-500">
+                {tenant.shortName}
+              </p>
             </div>
           </div>
-        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-2 p-4">
-          {modules.map((module) => {
-            const Icon =
-              iconMap[module.label as keyof typeof iconMap] ??
-              LayoutDashboard;
+          {/* Center Navigation */}
+          <div className="flex flex-1 justify-center">
+            <nav className="flex items-center gap-2">
+              {modules.map((module) => {
+                const Icon =
+                  iconMap[module.label as keyof typeof iconMap] ??
+                  LayoutDashboard;
 
-            return (
-              <NavLink
-                key={module.path}
-                to={module.path}
-                end={module.path === "/"}
-                className={getNavLinkClasses}
-              >
-                <Icon size={20} />
-                <span>{module.label}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div className="border-t border-slate-200 p-4">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-6">
-          <div>
-            <h2 className="text-2xl font-bold">{tenant.displayName}</h2>
-            <p className="text-sm text-slate-500">
-              Customer Relationship Management
-            </p>
+                return (
+                  <NavLink
+                    key={module.path}
+                    to={module.path}
+                    end={module.path === "/"}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition ${
+                        isActive
+                          ? "bg-slate-900 text-white"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      }`
+                    }
+                  >
+                    <Icon size={18} />
+                    <span>{module.label}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
           </div>
 
+          {/* Right */}
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 font-semibold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 font-semibold text-white">
               {user?.name?.[0]?.toUpperCase() ?? "U"}
             </div>
-          </div>
-        </header>
 
-        {/* Content Body */}
-        <main className="flex-1 overflow-auto bg-slate-100 p-8">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Page Content */}
+      <main className="pt-16">
+        <div className="p-8">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
