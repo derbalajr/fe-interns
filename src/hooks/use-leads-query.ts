@@ -18,15 +18,8 @@ export function useLeadsQuery({
   source = "",
 }: UseLeadsQueryParams = {}) {
   return useQuery({
-    queryKey: [
-      ...leadsQueryKey,
-      page,
-      search,
-      stage,
-      source,
-    ],
-    queryFn: () =>
-      getLeads(page, search, stage, source),
+    queryKey: [...leadsQueryKey, page, search, stage, source],
+    queryFn: () => getLeads(page, search, stage, source),
     placeholderData: (previousData) => previousData,
   });
 }

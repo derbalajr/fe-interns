@@ -25,10 +25,7 @@ function isUser(value: unknown): value is User {
 export async function loginRequest(
   credentials: LoginCredentials,
 ): Promise<LoginResponse> {
-  return apiPost<LoginResponse, LoginCredentials>(
-    "/login",
-    credentials,
-  );
+  return apiPost<LoginResponse, LoginCredentials>("/login", credentials);
 }
 
 export async function getProfile(): Promise<User> {

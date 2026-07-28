@@ -45,7 +45,14 @@ export function AppLayout() {
         navigate("/login", { replace: true });
       }
     }
-  }, [isLoadingUser, isLoadingTenant, user, tenant, location.pathname, navigate]);
+  }, [
+    isLoadingUser,
+    isLoadingTenant,
+    user,
+    tenant,
+    location.pathname,
+    navigate,
+  ]);
 
   // Wait until both Auth and Tenant hooks finish loading
   if (isLoadingUser || isLoadingTenant) {

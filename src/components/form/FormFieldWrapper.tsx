@@ -15,15 +15,12 @@ export function FormFieldWrapper({
   description,
   children,
 }: FormFieldWrapperProps) {
-  const descriptionId = description
-    ? `${id}-description`
-    : undefined;
+  const descriptionId = description ? `${id}-description` : undefined;
 
   const errorId = error ? `${id}-error` : undefined;
 
   const describedBy =
-    [descriptionId, errorId].filter(Boolean).join(" ") ||
-    undefined;
+    [descriptionId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
     <div className="space-y-2">
@@ -32,10 +29,7 @@ export function FormFieldWrapper({
       </label>
 
       {description && (
-        <p
-          id={descriptionId}
-          className="text-sm text-muted-foreground"
-        >
+        <p id={descriptionId} className="text-sm text-muted-foreground">
           {description}
         </p>
       )}
@@ -43,11 +37,7 @@ export function FormFieldWrapper({
       {children(describedBy)}
 
       {error && (
-        <p
-          id={errorId}
-          role="alert"
-          className="text-sm text-destructive"
-        >
+        <p id={errorId} role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}

@@ -27,10 +27,10 @@ export function CustomersPage() {
         </button>
       </div>
       <div className="space-y-8">
-      {/* Existing page content */}
+        {/* Existing page content */}
 
-      {import.meta.env.DEV && <CustomerFormDemo />}
-    </div>
+        {import.meta.env.DEV && <CustomerFormDemo />}
+      </div>
     </section>
   );
 }

@@ -1,8 +1,4 @@
-import {
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DataTable } from "@/components/data-table/DataTable";
 import { getLeadColumns } from "@/components/data-table/leadColumns";

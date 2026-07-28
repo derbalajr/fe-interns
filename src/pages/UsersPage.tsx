@@ -25,8 +25,7 @@ export default function UsersPage() {
         user.name.toLowerCase().includes(search.toLowerCase()) ||
         user.email.toLowerCase().includes(search.toLowerCase());
 
-      const matchesRole =
-        roleFilter === "All" || user.role === roleFilter;
+      const matchesRole = roleFilter === "All" || user.role === roleFilter;
 
       const matchesStatus =
         statusFilter === "All" || user.status === statusFilter;
@@ -64,9 +63,7 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Users
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
 
           <p className="mt-1 text-muted-foreground">
             Manage your CRM users and permissions.

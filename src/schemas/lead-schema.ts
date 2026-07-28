@@ -1,9 +1,7 @@
 import { z } from "zod";
-export type LeadSource =
-  (typeof LEAD_SOURCE_VALUES)[number];
+export type LeadSource = (typeof LEAD_SOURCE_VALUES)[number];
 
-export type LeadStage =
-  (typeof LEAD_STAGE_VALUES)[number];
+export type LeadStage = (typeof LEAD_STAGE_VALUES)[number];
 export const LEAD_SOURCE_VALUES = [
   "website",
   "referral",
