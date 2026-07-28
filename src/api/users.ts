@@ -6,9 +6,7 @@ export async function getUsers(): Promise<User[]> {
   return Promise.resolve([...mockUsers]);
 }
 
-export async function createUser(
-  data: UserFormValues,
-): Promise<User> {
+export async function createUser(data: UserFormValues): Promise<User> {
   const newUser: User = {
     id: Date.now(),
     ...data,

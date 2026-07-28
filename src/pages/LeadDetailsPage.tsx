@@ -69,7 +69,7 @@ export function LeadDetailsPage() {
 
         <LeadDetailsCard lead={lead} />
 
-        <LeadShortlistCard />
+        <LeadShortlistCard leadId={lead.id} />
       </div>
     </div>
   );

@@ -27,4 +27,3 @@ export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
     primaryColor: "bg-slate-900",
   },
 };
-
