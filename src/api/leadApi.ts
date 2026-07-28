@@ -9,6 +9,10 @@ export type AssignLeadPayload = {
   agent_id: number | null;
 };
 
+export type ChangeLeadStagePayload = {
+  stage: string;
+};
+
 const PER_PAGE = 100;
 
 export function getLeads(
@@ -61,6 +65,16 @@ export function assignLead(
 ) {
   return apiPatch<LeadResponse, AssignLeadPayload>(
     `/leads/${id}/assign`,
+    data,
+  );
+}
+
+export function changeLeadStage(
+  id: number,
+  data: ChangeLeadStagePayload,
+) {
+  return apiPatch<LeadResponse, ChangeLeadStagePayload>(
+    `/leads/${id}/stage`,
     data,
   );
 }
