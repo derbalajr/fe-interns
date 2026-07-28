@@ -21,10 +21,6 @@ type Stage = (typeof STAGES)[number];
 export default function DealsPage() {
   const { data, isLoading, isError } = useDealsQuery();
 
-  const [selectedStage] = useState("All Stages");
-  const [selectedAgent] = useState("All Agents");
-  const [selectedUnit] = useState("All Units");
-
   const [selectedDeal, setSelectedDeal] =
     useState<Deal | null>(null);
 
@@ -95,11 +91,7 @@ export default function DealsPage() {
         <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           {/* Toolbar */}
           <div className="border-b border-slate-200 px-5 py-4">
-            <DealsToolbar
-              selectedStage={selectedStage}
-              selectedAgent={selectedAgent}
-              selectedUnit={selectedUnit}
-            />
+            <DealsToolbar />
           </div>
 
           {/* Pipeline */}
