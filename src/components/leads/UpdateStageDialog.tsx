@@ -43,8 +43,7 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
 
   const changeStageMutation = useChangeLeadStage();
 
-  const availableStages =
-    allowedTransitions[lead.stage] ?? [];
+  const availableStages = allowedTransitions[lead.stage] ?? [];
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -60,14 +59,18 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
       return;
     }
 
-    await changeStageMutation.mutateAsync({
-      leadId: lead.id,
-      data: {
-        stage,
-      },
-    });
+    try {
+      await changeStageMutation.mutateAsync({
+        leadId: lead.id,
+        data: {
+          stage,
+        },
+      });
 
-    setOpen(false);
+      setOpen(false);
+    } catch {
+      // The mutation error is rendered inside the dialog.
+    }
   };
 
   const errorMessage =
@@ -103,10 +106,7 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
         <div className="space-y-5">
           {hasAvailableTransitions ? (
             <div className="space-y-2">
-              <label
-                htmlFor="lead-stage"
-                className="text-sm font-medium"
-              >
+              <label htmlFor="lead-stage" className="text-sm font-medium">
                 Stage
               </label>
 
@@ -158,15 +158,10 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
             {hasAvailableTransitions && (
               <Button
                 type="button"
-                disabled={
-                  changeStageMutation.isPending ||
-                  !stage
-                }
+                disabled={changeStageMutation.isPending || !stage}
                 onClick={handleSubmit}
               >
-                {changeStageMutation.isPending
-                  ? "Updating..."
-                  : "Update Stage"}
+                {changeStageMutation.isPending ? "Updating..." : "Update Stage"}
               </Button>
             )}
           </div>
