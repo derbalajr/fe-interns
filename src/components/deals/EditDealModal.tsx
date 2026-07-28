@@ -23,10 +23,7 @@ export function EditDealModal({
   const updateDeal = useUpdateDealMutation();
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Edit Deal</DialogTitle>
@@ -38,15 +35,20 @@ export function EditDealModal({
 
         {deal && (
           <DealForm
+            key={deal.id}
             deal={deal}
             isPending={updateDeal.isPending}
             onSubmit={async (data) => {
-              await updateDeal.mutateAsync({
-                id: deal.id,
-                data,
-              });
+              try {
+                await updateDeal.mutateAsync({
+                  id: deal.id,
+                  data,
+                });
 
-              onOpenChange(false);
+                onOpenChange(false);
+              } catch {
+                // The mutation handles and exposes the request error.
+              }
             }}
             onCancel={() => onOpenChange(false)}
           />

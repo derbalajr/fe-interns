@@ -23,11 +23,11 @@ export function getLeads(
 ) {
   const params = new URLSearchParams();
 
-  params.set("page", page.toString());
-  params.set("per_page", PER_PAGE.toString());
+  params.set("page", String(page));
+  params.set("per_page", String(PER_PAGE));
 
-  if (search) {
-    params.set("search", search);
+  if (search.trim()) {
+    params.set("q", search.trim());
   }
 
   if (stage) {

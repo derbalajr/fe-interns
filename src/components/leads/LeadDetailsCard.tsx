@@ -35,20 +35,24 @@ function DetailRow({ label, value, href }: DetailRowProps) {
 
 export function LeadDetailsCard({ lead }: LeadDetailsCardProps) {
   const { tenant } = useTenant();
+
   const currencyFormatter = useMemo(
     () =>
       new Intl.NumberFormat("en-EG", {
         style: "currency",
-        currency: tenant?.currency || "EGP",
+        currency: tenant?.currency ?? "EGP",
         maximumFractionDigits: 0,
       }),
     [tenant?.currency],
   );
 
+  const numericBudget =
+    lead.budget == null ? null : Number(lead.budget);
+
   const formattedBudget =
-    lead.budget == null
+    numericBudget === null || !Number.isFinite(numericBudget)
       ? "Not specified"
-      : currencyFormatter.format(lead.budget);
+      : currencyFormatter.format(numericBudget);
 
   const formattedDate = new Date(lead.created_at).toLocaleDateString(
     undefined,
@@ -74,13 +78,25 @@ export function LeadDetailsCard({ lead }: LeadDetailsCardProps) {
           href={`mailto:${lead.email}`}
         />
 
-        <DetailRow label="Source" value={lead.source || "Not specified"} />
+        <DetailRow
+          label="Source"
+          value={lead.source || "Not specified"}
+        />
 
-        <DetailRow label="Budget" value={formattedBudget} />
+        <DetailRow
+          label="Budget"
+          value={formattedBudget}
+        />
 
-        <DetailRow label="Stage" value={lead.stage} />
+        <DetailRow
+          label="Stage"
+          value={lead.stage}
+        />
 
-        <DetailRow label="Created" value={formattedDate} />
+        <DetailRow
+          label="Created"
+          value={formattedDate}
+        />
       </dl>
     </LeadPanel>
   );

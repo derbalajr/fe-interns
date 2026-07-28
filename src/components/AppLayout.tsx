@@ -1,18 +1,30 @@
 import { useEffect } from "react";
 import {
+  Bell,
+  Grid2X2,
+  HelpCircle,
   LayoutDashboard,
-  Users,
-  CalendarDays,
+  LogOut,
+  MessageSquareText,
+  Moon,
+  Search,
   ShieldCheck,
   Target,
+  Users,
+  CalendarDays,
   Building2,
   BriefcaseBusiness,
 } from "lucide-react";
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import {
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
-import { APP_MODULES } from "../constants/modules";
-import { useAuth } from "../context/AuthContext";
-import { useTenant } from "../hooks/use-tenant";
+import { APP_MODULES } from "@/constants/modules";
+import { useAuth } from "@/context/AuthContext";
+import { useTenant } from "@/hooks/use-tenant";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
@@ -48,7 +60,7 @@ export function AppLayout() {
 
   if (isLoadingUser || isLoadingTenant) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 text-sm font-medium text-slate-600">
+      <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-[#666666]">
         Loading your workspace...
       </div>
     );
@@ -56,7 +68,7 @@ export function AppLayout() {
 
   if (!tenant) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 text-sm font-medium text-slate-600">
+      <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-[#666666]">
         No valid workspace assigned. Redirecting...
       </div>
     );
@@ -76,29 +88,32 @@ export function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      {/* Top Navigation */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white">
-        <div className="flex h-16 items-center px-8">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 font-bold text-white">
-              {tenant.logoText}
+    <div className="min-h-screen bg-white text-[#252525]">
+      <header className="fixed inset-x-0 top-0 z-50 h-[72px] bg-white px-5 pt-3">
+        <div className="mx-auto flex h-[56px] max-w-[1320px] items-center rounded-2xl bg-[#f8f8f8] px-5">
+          <div className="flex min-w-[250px] items-center gap-4">
+            <div className="flex h-10 w-24 items-center justify-center">
+              <div className="text-center">
+                <p className="text-[10px] font-semibold tracking-[0.15em] text-[#9a927f]">
+                  KEYSTONE
+                </p>
+
+                <p className="text-[7px] tracking-[0.12em] text-[#b2aa98]">
+                  REAL ESTATE
+                </p>
+              </div>
             </div>
 
-            <div>
-              <h1 className="text-sm font-bold text-slate-900">
-                {tenant.displayName}
-              </h1>
-              <p className="text-xs text-slate-500">
-                {tenant.shortName}
-              </p>
+            <div className="flex h-9 items-center gap-3 rounded-xl border border-[#e8e8e8] bg-white px-4 text-xs font-medium text-[#333333] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+              <span>{tenant.logoText} - CRM</span>
+              <span aria-hidden="true" className="text-[#777777]">
+                ⇄
+              </span>
             </div>
           </div>
 
-          {/* Center Navigation */}
-          <div className="flex flex-1 justify-center">
-            <nav className="flex items-center gap-2">
+          <nav className="flex flex-1 justify-center">
+            <div className="flex items-center gap-1 rounded-xl border border-[#ededed] bg-white p-1 shadow-[0_2px_8px_rgba(0,0,0,0.035)]">
               {modules.map((module) => {
                 const Icon =
                   iconMap[module.label as keyof typeof iconMap] ??
@@ -110,41 +125,90 @@ export function AppLayout() {
                     to={module.path}
                     end={module.path === "/"}
                     className={({ isActive }) =>
-                      `flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition ${
+                      `flex h-8 items-center gap-1.5 rounded-lg px-3 text-[11px] font-medium transition ${
                         isActive
-                          ? "bg-slate-900 text-white"
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                          ? "bg-[#e9e5dd] text-[#242424]"
+                          : "text-[#777777] hover:bg-[#f4f4f4] hover:text-[#333333]"
                       }`
                     }
                   >
-                    <Icon size={18} />
+                    <Icon className="h-3.5 w-3.5" />
                     <span>{module.label}</span>
                   </NavLink>
                 );
               })}
-            </nav>
-          </div>
-
-          {/* Right */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 font-semibold text-white">
-              {user?.name?.[0]?.toUpperCase() ?? "U"}
             </div>
+          </nav>
+
+          <div className="flex min-w-[250px] items-center justify-end gap-2">
+            <button
+              type="button"
+              aria-label="Search"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ededed] bg-white text-[#777777] shadow-[0_2px_8px_rgba(0,0,0,0.035)] transition hover:text-[#222222]"
+            >
+              <Search className="h-4 w-4" />
+            </button>
 
             <button
               type="button"
-              onClick={handleLogout}
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              aria-label="Notifications"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ededed] bg-white text-[#777777] shadow-[0_2px_8px_rgba(0,0,0,0.035)] transition hover:text-[#222222]"
             >
-              Logout
+              <Bell className="h-4 w-4" />
             </button>
+
+            <div className="flex h-9 min-w-[145px] items-center gap-2 rounded-xl bg-[#efede8] px-4 text-xs text-[#77736b]">
+              <MessageSquareText className="h-4 w-4" />
+              <span>Ask Keystone...</span>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Page Content */}
-      <main className="pt-16">
-        <div className="p-8">
+      <aside className="fixed left-[calc(50%-660px)] top-[102px] z-40 hidden w-11 flex-col items-center gap-3 xl:flex">
+        <button
+          type="button"
+          aria-label="Applications"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f4f4f4] text-[#666666] shadow-[0_2px_8px_rgba(0,0,0,0.035)]"
+        >
+          <Grid2X2 className="h-4 w-4" />
+        </button>
+
+        <button
+          type="button"
+          aria-label="Theme"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f4f4f4] text-[#666666] shadow-[0_2px_8px_rgba(0,0,0,0.035)]"
+        >
+          <Moon className="h-4 w-4" />
+        </button>
+
+        <button
+          type="button"
+          aria-label="Help"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f4f4f4] text-[#666666] shadow-[0_2px_8px_rgba(0,0,0,0.035)]"
+        >
+          <HelpCircle className="h-4 w-4" />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Logout"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f4f4f4] text-[#666666] shadow-[0_2px_8px_rgba(0,0,0,0.035)] transition hover:bg-red-50 hover:text-red-600"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
+
+        <div
+          title={user?.name ?? "User"}
+          className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-[#f4f4f4] text-xs font-semibold text-[#555555] shadow-[0_2px_8px_rgba(0,0,0,0.035)]"
+        >
+          {user?.name?.charAt(0).toUpperCase() ?? "U"}
+        </div>
+      </aside>
+
+      <main className="min-h-screen pt-[112px]">
+        <div className="px-6 pb-12 xl:px-[170px]">
           <Outlet />
         </div>
       </main>
