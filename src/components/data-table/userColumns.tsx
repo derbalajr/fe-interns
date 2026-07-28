@@ -56,9 +56,7 @@ export function getUserColumns(
             <div>
               <p className="font-medium">{user.name}</p>
 
-              <p className="text-sm text-muted-foreground">
-                {user.email}
-              </p>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
           </div>
         );
@@ -86,11 +84,7 @@ export function getUserColumns(
       id: "actions",
       header: "",
       cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onEdit(row.original)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => onEdit(row.original)}>
           <Pencil className="mr-2 h-4 w-4" />
           Edit
         </Button>

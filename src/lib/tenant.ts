@@ -14,7 +14,9 @@ function normalizeTenantId(tenantId?: string | null): TenantId | null {
   return normalizedTenantId as TenantId;
 }
 
-export function getCurrentTenant(tenantId?: string | null): TenantConfig | null {
+export function getCurrentTenant(
+  tenantId?: string | null,
+): TenantConfig | null {
   const resolvedTenantId = normalizeTenantId(tenantId);
 
   return resolvedTenantId ? TENANT_CONFIGS[resolvedTenantId] : null;

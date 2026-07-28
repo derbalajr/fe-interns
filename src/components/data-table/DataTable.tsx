@@ -57,8 +57,7 @@ export function DataTable<TData, TValue>({
   const displayedCurrentPage =
     currentPage ?? table.getState().pagination.pageIndex + 1;
 
-  const displayedTotalPages =
-    pageCount ?? Math.max(table.getPageCount(), 1);
+  const displayedTotalPages = pageCount ?? Math.max(table.getPageCount(), 1);
 
   return (
     <div className="space-y-4">

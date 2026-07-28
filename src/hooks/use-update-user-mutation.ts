@@ -13,8 +13,7 @@ export function useUpdateUserMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: UpdateUserInput) =>
-      updateUser(id, data),
+    mutationFn: ({ id, data }: UpdateUserInput) => updateUser(id, data),
 
     onSuccess: () => {
       queryClient.invalidateQueries({

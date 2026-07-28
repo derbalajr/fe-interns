@@ -14,10 +14,7 @@ type EditUserDialogProps = {
   onClose: () => void;
 };
 
-export function EditUserDialog({
-  user,
-  onClose,
-}: EditUserDialogProps) {
+export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
   return (
     <Dialog
       open={user !== null}
@@ -31,17 +28,10 @@ export function EditUserDialog({
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
 
-          <DialogDescription>
-            Update the user's information.
-          </DialogDescription>
+          <DialogDescription>Update the user's information.</DialogDescription>
         </DialogHeader>
 
-        {user && (
-          <UserForm
-            user={user}
-            onSuccess={onClose}
-          />
-        )}
+        {user && <UserForm user={user} onSuccess={onClose} />}
       </DialogContent>
     </Dialog>
   );
