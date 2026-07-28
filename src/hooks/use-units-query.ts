@@ -17,13 +17,3 @@ export function useUnitsQuery({
     placeholderData: (previousData) => previousData,
   });
 }
-import { getUnits } from "@/api/units";
-
-export const unitsQueryKey = ["units"] as const;
-
-export function useUnitsQuery() {
-  return useQuery({
-    queryKey: unitsQueryKey,
-    queryFn: getUnits,
-  });
-}

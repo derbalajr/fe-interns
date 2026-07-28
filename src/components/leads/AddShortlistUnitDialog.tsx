@@ -44,7 +44,7 @@ export function AddShortlistUnitDialog({
 
   const availableUnits = useMemo(
     () =>
-      (unitsQuery.data ?? []).filter(
+      (unitsQuery.data?.data ?? []).filter(
         (unit) => unit.status === "available" && !shortlistedIds.has(unit.id),
       ),
     [shortlistedIds, unitsQuery.data],
