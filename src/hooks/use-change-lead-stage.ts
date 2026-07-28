@@ -1,9 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import {
-  changeLeadStage,
-  type ChangeLeadStagePayload,
-} from "@/api/leadApi";
+import { changeLeadStage, type ChangeLeadStagePayload } from "@/api/leadApi";
+import { leadsQueryKey } from "@/hooks/use-leads-query";
 import { leadQueryKey } from "@/hooks/use-lead-query";
 
 type ChangeLeadStageVariables = {
@@ -15,10 +13,7 @@ export function useChangeLeadStage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      leadId,
-      data,
-    }: ChangeLeadStageVariables) =>
+    mutationFn: ({ leadId, data }: ChangeLeadStageVariables) =>
       changeLeadStage(leadId, data),
 
     onSuccess: async (_response, variables) => {
@@ -28,7 +23,7 @@ export function useChangeLeadStage() {
         }),
 
         queryClient.invalidateQueries({
-          queryKey: ["leads"],
+          queryKey: leadsQueryKey,
         }),
       ]);
     },
