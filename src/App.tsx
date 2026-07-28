@@ -6,6 +6,7 @@ import { PublicOnlyRoute } from "@/components/PublicOnlyRoute";
 import { TenantRoute } from "@/components/TenantRoute";
 import { CustomersPage } from "@/pages/CustomersPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import DealsPage from "@/pages/DealsPage";
 import LeadsPage from "@/pages/LeadsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -33,6 +34,7 @@ function App() {
               </TenantRoute>
             }
           />
+
           <Route
             path="leads/:id"
             element={
@@ -41,6 +43,16 @@ function App() {
               </TenantRoute>
             }
           />
+
+          <Route
+            path="deals"
+            element={
+              <TenantRoute allowedTenant="tai">
+                <DealsPage />
+              </TenantRoute>
+            }
+          />
+
           <Route path="customers" element={<CustomersPage />} />
 
           <Route
