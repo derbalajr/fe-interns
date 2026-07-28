@@ -20,17 +20,12 @@ import {
 import { useAddShortlistUnitMutation } from "@/hooks/use-add-shortlist-unit-mutation";
 import { useUnitsQuery } from "@/hooks/use-units-query";
 import type { Unit } from "@/types/unit";
+import { getProjectName } from "@/utils/unit";
 
 type AddShortlistUnitDialogProps = {
   leadId: number;
   shortlistedUnits: Unit[];
 };
-
-function getProjectName(unit: Unit) {
-  return (
-    unit.project?.name ?? unit.project?.title ?? `Project ${unit.project_id}`
-  );
-}
 
 export function AddShortlistUnitDialog({
   leadId,
@@ -71,13 +66,16 @@ export function AddShortlistUnitDialog({
       return;
     }
 
-    await addMutation.mutateAsync({
-      leadId,
-      unitId,
-    });
+    try {
+      await addMutation.mutateAsync({
+        leadId,
+        unitId,
+      });
 
-    setOpen(false);
-    setSelectedUnitId("");
+      handleOpenChange(false);
+    } catch {
+      // The mutation error is rendered inside the dialog.
+    }
   };
 
   const errorMessage =
@@ -163,7 +161,7 @@ export function AddShortlistUnitDialog({
               type="button"
               variant="outline"
               disabled={addMutation.isPending}
-              onClick={() => setOpen(false)}
+              onClick={() => handleOpenChange(false)}
             >
               Cancel
             </Button>

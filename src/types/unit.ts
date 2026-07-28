@@ -10,8 +10,8 @@ export type Unit = {
   id: number;
   code: string;
   type: string;
-  area: number;
-  price: number;
+  area: string | number;
+  price: string | number;
   status: UnitStatus;
   project_id: number;
   project: UnitProject | null;

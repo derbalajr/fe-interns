@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useLeadShortlistQuery } from "@/hooks/use-lead-shortlist-query";
 import { useRemoveShortlistUnitMutation } from "@/hooks/use-remove-shortlist-unit-mutation";
 import { useTenant } from "@/hooks/use-tenant";
-import type { Unit } from "@/types/unit";
+import { getProjectName } from "@/utils/unit";
 
 import { AddShortlistUnitDialog } from "./AddShortlistUnitDialog";
 import { LeadPanel } from "./LeadPanel";
@@ -13,12 +13,6 @@ import { LeadPanel } from "./LeadPanel";
 type LeadShortlistCardProps = {
   leadId: number;
 };
-
-function getProjectName(unit: Unit) {
-  return (
-    unit.project?.name ?? unit.project?.title ?? `Project ${unit.project_id}`
-  );
-}
 
 export function LeadShortlistCard({ leadId }: LeadShortlistCardProps) {
   const { tenant } = useTenant();
@@ -30,16 +24,16 @@ export function LeadShortlistCard({ leadId }: LeadShortlistCardProps) {
 
   const currencyFormatter = useMemo(
     () =>
-      new Intl.NumberFormat("en-US", {
+      new Intl.NumberFormat(undefined, {
         style: "currency",
-        currency: tenant?.currency ?? "USD",
+        currency: tenant?.currency ?? "EGP",
         maximumFractionDigits: 0,
       }),
     [tenant?.currency],
   );
 
-  const handleRemove = async (unitId: number) => {
-    await removeMutation.mutateAsync({
+  const handleRemove = (unitId: number) => {
+    removeMutation.mutate({
       leadId,
       unitId,
     });
@@ -85,7 +79,10 @@ export function LeadShortlistCard({ leadId }: LeadShortlistCardProps) {
           </p>
 
           <div className="mt-6">
-            <AddShortlistUnitDialog leadId={leadId} shortlistedUnits={units} />
+            <AddShortlistUnitDialog
+              leadId={leadId}
+              shortlistedUnits={units}
+            />
           </div>
         </div>
       ) : (
@@ -114,7 +111,7 @@ export function LeadShortlistCard({ leadId }: LeadShortlistCardProps) {
                       type="button"
                       size="icon"
                       variant="ghost"
-                      disabled={removeMutation.isPending}
+                      disabled={isRemoving}
                       aria-label={`Remove unit ${unit.code}`}
                       onClick={() => handleRemove(unit.id)}
                     >
@@ -126,14 +123,14 @@ export function LeadShortlistCard({ leadId }: LeadShortlistCardProps) {
                     <div>
                       <p className="text-slate-500">Area</p>
                       <p className="mt-1 font-medium text-slate-900">
-                        {unit.area} m²
+                        {Number(unit.area).toLocaleString()} m²
                       </p>
                     </div>
 
                     <div>
                       <p className="text-slate-500">Price</p>
                       <p className="mt-1 font-medium text-slate-900">
-                        {currencyFormatter.format(unit.price)}
+                        {currencyFormatter.format(Number(unit.price))}
                       </p>
                     </div>
                   </div>
@@ -157,7 +154,10 @@ export function LeadShortlistCard({ leadId }: LeadShortlistCardProps) {
             </p>
           )}
 
-          <AddShortlistUnitDialog leadId={leadId} shortlistedUnits={units} />
+          <AddShortlistUnitDialog
+            leadId={leadId}
+            shortlistedUnits={units}
+          />
         </div>
       )}
     </LeadPanel>
