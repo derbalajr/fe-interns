@@ -42,16 +42,15 @@ export function AddShortlistUnitDialog({
     [shortlistedUnits],
   );
 
-  const availableUnits = useMemo(
-    () =>
-      (unitsQuery.data?.data ?? []).filter(
-        (unit) =>
-          unit.status === "available" &&
-          !shortlistedIds.has(unit.id),
-      ),
-    [shortlistedIds, unitsQuery.data?.data],
-  );
-
+const availableUnits = useMemo(
+  () =>
+    (unitsQuery.data?.data ?? []).filter(
+      (unit) =>
+        unit.status === "available" &&
+        !shortlistedIds.has(unit.id),
+    ),
+  [shortlistedIds, unitsQuery.data?.data],
+);
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
 
