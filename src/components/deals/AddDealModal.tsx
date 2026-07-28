@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { DealForm } from "./DealForm";
-import { useCreateDealMutation } from "@/hooks/use-create-deal-mutation";
+
+import { DealForm } from "@/components/deals/DealForm";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,20 +12,41 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useCreateDealMutation } from "@/hooks/use-create-deal-mutation";
 
-export function AddDealModal() {
+type AddDealModalProps = {
+  triggerLabel?: string;
+  triggerIcon?: ReactNode;
+  triggerClassName?: string;
+};
+
+export function AddDealModal({
+  triggerLabel = "Add Deal",
+  triggerIcon = <Plus className="h-4 w-4" />,
+  triggerClassName = "h-11 rounded-xl bg-slate-900 px-5 text-white hover:bg-slate-800",
+}: AddDealModalProps) {
   const [open, setOpen] = useState(false);
-const createDeal = useCreateDealMutation();
+
+  const createDeal = useCreateDealMutation();
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+
+    if (!nextOpen) {
+      createDeal.reset();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           <Button
             type="button"
-            className="h-11 rounded-xl bg-slate-900 px-5 text-white hover:bg-slate-800"
+            className={triggerClassName}
           >
-            <Plus size={16} className="mr-2" />
-            Add Deal
+            {triggerIcon}
+            {triggerLabel}
           </Button>
         }
       />
@@ -38,14 +60,18 @@ const createDeal = useCreateDealMutation();
           </DialogDescription>
         </DialogHeader>
 
-        {<DealForm
-  isPending={createDeal.isPending}
-  onSubmit={async (data) => {
-    await createDeal.mutateAsync(data);
-    setOpen(false);
-  }}
-  onCancel={() => setOpen(false)}
-/>}
+        <DealForm
+          isPending={createDeal.isPending}
+          onSubmit={async (formData) => {
+            try {
+              await createDeal.mutateAsync(formData);
+              handleOpenChange(false);
+            } catch {
+              // The mutation error is exposed by the form or hook.
+            }
+          }}
+          onCancel={() => handleOpenChange(false)}
+        />
       </DialogContent>
     </Dialog>
   );

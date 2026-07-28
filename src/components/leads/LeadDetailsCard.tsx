@@ -15,14 +15,23 @@ type DetailRowProps = {
   href?: string;
 };
 
-function DetailRow({ label, value, href }: DetailRowProps) {
+function DetailRow({
+  label,
+  value,
+  href,
+}: DetailRowProps) {
   return (
-    <div className="grid grid-cols-[90px_1fr] gap-4 border-b border-slate-200 py-4 first:pt-0 last:border-b-0 last:pb-0">
-      <dt className="text-sm text-slate-500">{label}</dt>
+    <div className="grid grid-cols-[70px_minmax(0,1fr)] gap-4 border-b border-[#ededed] py-3 first:pt-0 last:border-b-0 last:pb-0">
+      <dt className="text-[10px] text-[#777777]">
+        {label}:
+      </dt>
 
-      <dd className="min-w-0 text-sm font-medium text-slate-900">
+      <dd className="min-w-0 text-[10px] font-medium text-[#303030]">
         {href ? (
-          <a href={href} className="break-words hover:underline">
+          <a
+            href={href}
+            className="break-words hover:underline"
+          >
             {value}
           </a>
         ) : (
@@ -33,7 +42,16 @@ function DetailRow({ label, value, href }: DetailRowProps) {
   );
 }
 
-export function LeadDetailsCard({ lead }: LeadDetailsCardProps) {
+function formatValue(value: string): string {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export function LeadDetailsCard({
+  lead,
+}: LeadDetailsCardProps) {
   const { tenant } = useTenant();
 
   const currencyFormatter = useMemo(
@@ -47,21 +65,23 @@ export function LeadDetailsCard({ lead }: LeadDetailsCardProps) {
   );
 
   const numericBudget =
-    lead.budget == null ? null : Number(lead.budget);
+    lead.budget == null
+      ? null
+      : Number(lead.budget);
 
   const formattedBudget =
-    numericBudget === null || !Number.isFinite(numericBudget)
+    numericBudget === null ||
+    !Number.isFinite(numericBudget)
       ? "Not specified"
       : currencyFormatter.format(numericBudget);
 
-  const formattedDate = new Date(lead.created_at).toLocaleDateString(
-    undefined,
-    {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    },
-  );
+  const formattedDate = new Date(
+    lead.created_at,
+  ).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <LeadPanel title="Details" className="h-full">
@@ -69,7 +89,11 @@ export function LeadDetailsCard({ lead }: LeadDetailsCardProps) {
         <DetailRow
           label="Phone"
           value={lead.phone || "Not specified"}
-          href={lead.phone ? `tel:${lead.phone}` : undefined}
+          href={
+            lead.phone
+              ? `tel:${lead.phone}`
+              : undefined
+          }
         />
 
         <DetailRow
@@ -80,7 +104,7 @@ export function LeadDetailsCard({ lead }: LeadDetailsCardProps) {
 
         <DetailRow
           label="Source"
-          value={lead.source || "Not specified"}
+          value={formatValue(lead.source)}
         />
 
         <DetailRow
@@ -90,7 +114,7 @@ export function LeadDetailsCard({ lead }: LeadDetailsCardProps) {
 
         <DetailRow
           label="Stage"
-          value={lead.stage}
+          value={formatValue(lead.stage)}
         />
 
         <DetailRow
