@@ -41,7 +41,6 @@ export function AddShortlistUnitDialog({
     () => new Set(shortlistedUnits.map((unit) => unit.id)),
     [shortlistedUnits],
   );
-
 const availableUnits = useMemo(
   () =>
     (unitsQuery.data?.data ?? []).filter(

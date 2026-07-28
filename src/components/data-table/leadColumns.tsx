@@ -1,35 +1,101 @@
-import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
 
-import { useTenant } from "@/hooks/use-tenant";
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 import type { Lead } from "@/types/lead";
 
-export function useLeadColumns(): ColumnDef<Lead>[] {
-  const { tenant } = useTenant();
+function getStageVariant(stage: Lead["stage"]) {
+  switch (stage) {
+    case "new":
+      return "secondary";
 
-  return useMemo(
-    () => [
-      {
-        accessorKey: "name",
-        header: "Client Name",
+    case "qualified":
+      return "default";
+
+    case "contacted":
+      return "outline";
+
+    case "lost":
+      return "destructive";
+
+    default:
+      return "secondary";
+  }
+}
+
+export function getLeadColumns(currencyCode: string): ColumnDef<Lead>[] {
+  const currency = new Intl.NumberFormat("en-EG", {
+    style: "currency",
+    currency: currencyCode || "EGP",
+    maximumFractionDigits: 0,
+  });
+
+  return [
+    {
+      accessorKey: "name",
+      header: "Lead",
+      cell: ({ row }) => {
+        const lead = row.original;
+
+        return (
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 font-semibold text-white">
+              {lead.name.charAt(0)}
+            </div>
+
+            <div>
+              <Link
+                to={`/leads/${lead.id}`}
+                className="font-medium text-slate-900 hover:underline"
+              >
+                {lead.name}
+              </Link>
+              <p className="text-sm text-muted-foreground">{lead.email}</p>
+            </div>
+          </div>
+        );
       },
-      {
-        accessorKey: "budget",
-        header: "Budget",
-        cell: ({ row }) => {
-          const budget = row.original.budget;
+    },
+    {
+      accessorKey: "stage",
+      header: "Stage",
+      cell: ({ row }) => (
+        <Badge variant={getStageVariant(row.original.stage)}>
+          {row.original.stage}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "source",
+      header: "Source",
+    },
+    {
+      accessorKey: "agent",
+      header: "Agent",
+      cell: ({ row }) => row.original.agent?.name ?? "-",
+    },
+    {
+      accessorKey: "budget",
+      header: "Budget",
+      cell: ({ row }) => {
+        const budget = row.original.budget;
 
-          if (budget === null) {
-            return "—";
-          }
-
-          return new Intl.NumberFormat("en-EG", {
-            style: "currency",
-            currency: tenant?.currency || "EGP",
-          }).format(budget);
-        },
+        return budget == null ? "—" : currency.format(budget);
       },
-    ],
-    [tenant?.currency],
-  );
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <Link
+          to={`/leads/${row.original.id}`}
+          aria-label={`View ${row.original.name}`}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </Link>
+      ),
+    },
+  ];
 }

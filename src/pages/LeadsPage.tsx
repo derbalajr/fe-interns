@@ -1,9 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DataTable } from "@/components/data-table/DataTable";
-import { useLeadColumns } from "@/components/data-table/leadColumns";
+import { getLeadColumns } from "@/components/data-table/leadColumns";
 import { LeadToolbar } from "@/components/leads/LeadToolbar";
 import { useLeadsQuery } from "@/hooks/use-leads-query";
+import { useTenant } from "@/hooks/use-tenant";
 
 export default function LeadsPage() {
   const [page, setPage] = useState(1);
@@ -11,14 +12,19 @@ export default function LeadsPage() {
   const [stage, setStage] = useState("");
   const [source, setSource] = useState("");
 
-  const columns = useLeadColumns();
-
   const { data, isLoading, isError } = useLeadsQuery({
     page,
     search,
     stage,
     source,
   });
+
+  const { tenant } = useTenant();
+
+  const columns = useMemo(
+    () => getLeadColumns(tenant?.currency ?? "USD"),
+    [tenant?.currency],
+  );
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
@@ -62,7 +68,7 @@ export default function LeadsPage() {
         </h1>
 
         <p className="mt-2 text-base text-slate-500">
-          Everyone your agents are working with, in one pipeline.
+          Everyone your agents are working, in one pipeline.
         </p>
       </div>
 
