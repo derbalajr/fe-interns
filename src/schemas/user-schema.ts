@@ -7,9 +7,12 @@ const baseUserSchema = z.object({
 
   email: z.email("Enter a valid email"),
 
+  // On edit the password inputs aren't shown and the fields reset to "".
+  // Allow an empty string (meaning "leave unchanged") alongside a valid one.
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
+    .or(z.literal(""))
     .optional(),
 
   password_confirmation: z.string().optional(),
