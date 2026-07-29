@@ -127,14 +127,10 @@ export default function DealsPage() {
       );
 
       const normalizedFirstIndex =
-        firstStageIndex === -1
-          ? BOARD_STAGES.length
-          : firstStageIndex;
+        firstStageIndex === -1 ? BOARD_STAGES.length : firstStageIndex;
 
       const normalizedSecondIndex =
-        secondStageIndex === -1
-          ? BOARD_STAGES.length
-          : secondStageIndex;
+        secondStageIndex === -1 ? BOARD_STAGES.length : secondStageIndex;
 
       return sortDirection === "asc"
         ? normalizedFirstIndex -
@@ -150,36 +146,36 @@ export default function DealsPage() {
     unitFilter,
   ]);
 
-  const dealsByStage = useMemo<
-    Record<BoardStage, Deal[]>
-  >(
-    () => ({
-      new: filteredDeals.filter(
-        (deal) => deal.stage === "new",
-      ),
+ const dealsByStage = useMemo<
+  Record<BoardStage, Deal[]>
+>(
+  () => ({
+    new: filteredDeals.filter(
+      (deal) => deal.stage === "new",
+    ),
 
-      qualified: filteredDeals.filter(
-        (deal) => deal.stage === "qualified",
-      ),
+    qualified: filteredDeals.filter(
+      (deal) => deal.stage === "qualified",
+    ),
 
-      contacted: filteredDeals.filter(
-        (deal) => deal.stage === "contacted",
-      ),
+    contacted: filteredDeals.filter(
+      (deal) => deal.stage === "contacted",
+    ),
 
-      negotiation: filteredDeals.filter(
-        (deal) => deal.stage === "negotiation",
-      ),
+    negotiation: filteredDeals.filter(
+      (deal) => deal.stage === "negotiation",
+    ),
 
-      won: filteredDeals.filter(
-        (deal) => deal.stage === "won",
-      ),
+    won: filteredDeals.filter(
+      (deal) => deal.stage === "won",
+    ),
 
-      lost: filteredDeals.filter(
-        (deal) => deal.stage === "lost",
-      ),
-    }),
-    [filteredDeals],
-  );
+    lost: filteredDeals.filter(
+      (deal) => deal.stage === "lost",
+    ),
+  }),
+  [filteredDeals],
+);
 
   if (isLoading) {
     return (
@@ -187,9 +183,7 @@ export default function DealsPage() {
         <div className="text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#dddddd] border-t-[#222222]" />
 
-          <p className="mt-4 text-sm text-[#777777]">
-            Loading deals...
-          </p>
+          <p className="mt-4 text-sm text-[#777777]">Loading deals...</p>
         </div>
       </div>
     );

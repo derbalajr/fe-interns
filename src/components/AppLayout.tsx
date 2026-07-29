@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import {
   Bell,
+  BriefcaseBusiness,
+  Building2,
+  CalendarDays,
   Grid2X2,
   HelpCircle,
   LayoutDashboard,
@@ -11,9 +14,6 @@ import {
   ShieldCheck,
   Target,
   Users,
-  CalendarDays,
-  Building2,
-  BriefcaseBusiness,
 } from "lucide-react";
 import {
   NavLink,
@@ -89,10 +89,10 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-white text-[#252525]">
-      <header className="fixed inset-x-0 top-0 z-50 h-[72px] bg-white px-5 pt-3">
-        <div className="mx-auto flex h-[56px] max-w-[1320px] items-center rounded-2xl bg-[#f8f8f8] px-5">
-          <div className="flex min-w-[250px] items-center gap-4">
-            <div className="flex h-10 w-24 items-center justify-center">
+      <header className="fixed inset-x-0 top-0 z-50 h-[72px] bg-white px-3 pt-3 sm:px-5">
+        <div className="mx-auto flex h-[56px] max-w-[1320px] items-center rounded-2xl bg-[#f8f8f8] px-3 sm:px-5">
+          <div className="flex shrink-0 items-center gap-2 xl:min-w-[250px] xl:gap-4">
+            <div className="hidden h-10 w-24 items-center justify-center sm:flex">
               <div className="text-center">
                 <p className="text-[10px] font-semibold tracking-[0.15em] text-[#9a927f]">
                   KEYSTONE
@@ -104,15 +104,16 @@ export function AppLayout() {
               </div>
             </div>
 
-            <div className="flex h-9 items-center gap-3 rounded-xl border border-[#e8e8e8] bg-white px-4 text-xs font-medium text-[#333333] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <div className="flex h-9 items-center gap-2 rounded-xl border border-[#e8e8e8] bg-white px-3 text-xs font-medium text-[#333333] shadow-[0_2px_8px_rgba(0,0,0,0.04)] sm:px-4">
               <span>{tenant.logoText} - CRM</span>
+
               <span aria-hidden="true" className="text-[#777777]">
                 ⇄
               </span>
             </div>
           </div>
 
-          <nav className="flex flex-1 justify-center">
+          <nav className="flex min-w-0 flex-1 justify-center overflow-x-auto px-2">
             <div className="flex items-center gap-1 rounded-xl border border-[#ededed] bg-white p-1 shadow-[0_2px_8px_rgba(0,0,0,0.035)]">
               {modules.map((module) => {
                 const Icon =
@@ -125,7 +126,7 @@ export function AppLayout() {
                     to={module.path}
                     end={module.path === "/"}
                     className={({ isActive }) =>
-                      `flex h-8 items-center gap-1.5 rounded-lg px-3 text-[11px] font-medium transition ${
+                      `flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[11px] font-medium transition ${
                         isActive
                           ? "bg-[#e9e5dd] text-[#242424]"
                           : "text-[#777777] hover:bg-[#f4f4f4] hover:text-[#333333]"
@@ -133,18 +134,18 @@ export function AppLayout() {
                     }
                   >
                     <Icon className="h-3.5 w-3.5" />
-                    <span>{module.label}</span>
+                    <span className="hidden sm:inline">{module.label}</span>
                   </NavLink>
                 );
               })}
             </div>
           </nav>
 
-          <div className="flex min-w-[250px] items-center justify-end gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-2 xl:min-w-[250px]">
             <button
               type="button"
               aria-label="Search"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ededed] bg-white text-[#777777] shadow-[0_2px_8px_rgba(0,0,0,0.035)] transition hover:text-[#222222]"
+              className="hidden h-9 w-9 items-center justify-center rounded-xl border border-[#ededed] bg-white text-[#777777] shadow-[0_2px_8px_rgba(0,0,0,0.035)] transition hover:text-[#222222] md:flex"
             >
               <Search className="h-4 w-4" />
             </button>
@@ -152,15 +153,32 @@ export function AppLayout() {
             <button
               type="button"
               aria-label="Notifications"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ededed] bg-white text-[#777777] shadow-[0_2px_8px_rgba(0,0,0,0.035)] transition hover:text-[#222222]"
+              className="hidden h-9 w-9 items-center justify-center rounded-xl border border-[#ededed] bg-white text-[#777777] shadow-[0_2px_8px_rgba(0,0,0,0.035)] transition hover:text-[#222222] md:flex"
             >
               <Bell className="h-4 w-4" />
             </button>
 
-            <div className="flex h-9 min-w-[145px] items-center gap-2 rounded-xl bg-[#efede8] px-4 text-xs text-[#77736b]">
+            <div className="hidden h-9 min-w-[145px] items-center gap-2 rounded-xl bg-[#efede8] px-4 text-xs text-[#77736b] xl:flex">
               <MessageSquareText className="h-4 w-4" />
               <span>Ask Keystone...</span>
             </div>
+
+            <div
+              title={user?.name ?? "User"}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ececec] text-xs font-semibold text-[#555555] shadow-[0_2px_8px_rgba(0,0,0,0.035)] xl:hidden"
+            >
+              {user?.name?.charAt(0).toUpperCase() ?? "U"}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              aria-label="Logout"
+              title="Logout"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ededed] bg-white text-[#777777] shadow-[0_2px_8px_rgba(0,0,0,0.035)] transition hover:bg-red-50 hover:text-red-600 xl:hidden"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </header>
@@ -208,7 +226,7 @@ export function AppLayout() {
       </aside>
 
       <main className="min-h-screen pt-[112px]">
-        <div className="px-6 pb-12 xl:px-[170px]">
+        <div className="px-4 pb-12 sm:px-6 xl:px-[170px]">
           <Outlet />
         </div>
       </main>

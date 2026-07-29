@@ -133,7 +133,7 @@ export function DealsToolbar({
         </Button>
 
         <AddDealModal
-          triggerLabel="All Units"
+          triggerLabel="Add Deal"
           triggerIcon={<Plus className="h-4 w-4" />}
           triggerClassName="h-11 rounded-xl bg-[#222222] px-5 text-xs text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:bg-[#333333]"
         />
@@ -145,6 +145,7 @@ export function DealsToolbar({
           className="h-11 rounded-xl border-[#e8e8e8] bg-white px-4 text-xs text-[#777777] shadow-[0_2px_8px_rgba(0,0,0,0.035)]"
         >
           Sort By: Stage
+
           <ArrowDownUp
             className={`ml-2 h-3.5 w-3.5 transition ${
               sortDirection === "desc" ? "rotate-180" : ""

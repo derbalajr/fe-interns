@@ -6,6 +6,7 @@ import {
   LeadToolbar,
   type LeadAgentOption,
 } from "@/components/leads/LeadToolbar";
+import { useAgentsQuery } from "@/hooks/use-agents-query";
 import { useLeadsQuery } from "@/hooks/use-leads-query";
 
 const leadColumns = getLeadColumns();
@@ -22,36 +23,23 @@ export default function LeadsPage() {
     search,
     stage,
     source,
+    agentId,
   });
 
-  const leads = data?.data ?? [];
+  const agentsQuery = useAgentsQuery();
 
-  const agents = useMemo<LeadAgentOption[]>(() => {
-    const uniqueAgents = new Map<number, LeadAgentOption>();
-
-    for (const lead of leads) {
-      if (lead.agent) {
-        uniqueAgents.set(lead.agent.id, {
-          id: lead.agent.id,
-          name: lead.agent.name,
-        });
-      }
-    }
-
-    return Array.from(uniqueAgents.values()).sort((firstAgent, secondAgent) =>
-      firstAgent.name.localeCompare(secondAgent.name),
-    );
-  }, [leads]);
-
-  const filteredLeads = useMemo(() => {
-    if (!agentId) {
-      return leads;
-    }
-
-    const selectedAgentId = Number(agentId);
-
-    return leads.filter((lead) => lead.agent?.id === selectedAgentId);
-  }, [agentId, leads]);
+  const agents = useMemo<LeadAgentOption[]>(
+    () =>
+      (agentsQuery.data ?? [])
+        .map((agent) => ({
+          id: agent.id,
+          name: agent.name,
+        }))
+        .sort((firstAgent, secondAgent) =>
+          firstAgent.name.localeCompare(secondAgent.name),
+        ),
+    [agentsQuery.data],
+  );
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
@@ -100,6 +88,15 @@ export default function LeadsPage() {
         onAgentChange={handleAgentChange}
       />
 
+      {agentsQuery.isError && (
+        <p
+          role="alert"
+          className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+        >
+          Failed to load the agent filter options.
+        </p>
+      )}
+
       <div className="mt-7">
         {isLoading ? (
           <div className="flex min-h-72 items-center justify-center rounded-2xl border border-[#e7e7e7] bg-white">
@@ -112,7 +109,7 @@ export default function LeadsPage() {
         ) : (
           <DataTable
             columns={leadColumns}
-            data={filteredLeads}
+            data={data?.data ?? []}
             manualPagination
             currentPage={currentPage}
             pageCount={lastPage}
