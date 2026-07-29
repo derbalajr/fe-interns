@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateUserMutation } from "@/hooks/use-create-user-mutation";
 import { useUpdateUserMutation } from "@/hooks/use-update-user-mutation";
-import { userSchema, type UserFormValues } from "@/schemas/user-schema";
+import { useRolesQuery } from "@/hooks/use-roles-query";
+import { useAuth } from "@/context/AuthContext";
+import { createUserSchema, updateUserSchema, type UserFormValues } from "@/schemas/user-schema";
 import type { User } from "@/types/user";
 
 type UserFormProps = {
@@ -18,6 +20,8 @@ type UserFormProps = {
 export function UserForm({ user, onSuccess }: UserFormProps) {
   const createMutation = useCreateUserMutation();
   const updateMutation = useUpdateUserMutation();
+  const { data: roles = [], isLoading: isLoadingRoles } = useRolesQuery();
+  const { user: currentUser } = useAuth();
 
   const {
     register,
@@ -25,11 +29,12 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
     reset,
     formState: { errors },
   } = useForm<UserFormValues>({
-    resolver: zodResolver(userSchema),
+    resolver: zodResolver(user ? updateUserSchema : createUserSchema),
     defaultValues: {
       name: "",
       email: "",
-      role: "Agent",
+      password: user ? "" : undefined,
+      role_id: undefined,
       status: "Active",
     },
   });
@@ -39,8 +44,10 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
       reset({
         name: user.name,
         email: user.email,
-        role: user.role,
-        status: user.status,
+        password: "",
+        password_confirmation: "",
+        role_id: user.roleObj?.id,
+        status: user.status as "Active" | "Inactive" | undefined,
       });
     }
   }, [user, reset]);
@@ -54,7 +61,12 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
         });
         toast.success("User updated");
       } else {
-        await createMutation.mutateAsync(values);
+        // Add current user's tenant to the new user data
+        const createData = {
+          ...values,
+          tenant: currentUser?.tenant,
+        };
+        await createMutation.mutateAsync(createData);
         toast.success("User created");
       }
 
@@ -101,19 +113,66 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
       </div>
 
       <div>
-        <label htmlFor="role" className="mb-2 block text-sm font-medium">
+        <label htmlFor="role_id" className="mb-2 block text-sm font-medium">
           Role
         </label>
 
         <select
-          id="role"
-          {...register("role")}
+          id="role_id"
+          {...register("role_id", { valueAsNumber: true })}
           className="h-10 w-full rounded-md border bg-background px-3"
+          disabled={isLoadingRoles}
         >
-          <option value="Manager">Manager</option>
-          <option value="Agent">Agent</option>
+          <option value="">Select a role</option>
+          {Array.isArray(roles) && roles.map((role) => (
+            <option key={role.id} value={role.id}>
+              {role.name}
+            </option>
+          ))}
         </select>
+
+        {errors.role_id && (
+          <p className="mt-1 text-sm text-red-500">{errors.role_id.message}</p>
+        )}
       </div>
+
+      {!user && (
+        <>
+          <div>
+            <label htmlFor="password" className="mb-2 block text-sm font-medium">
+              Password
+            </label>
+
+            <Input
+              id="password"
+              type="password"
+              {...register("password")}
+              placeholder="••••••••"
+            />
+
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="password_confirmation" className="mb-2 block text-sm font-medium">
+              Confirm Password
+            </label>
+
+            <Input
+              id="password_confirmation"
+              type="password"
+              {...register("password_confirmation")}
+              placeholder="••••••••"
+            />
+
+            {errors.password_confirmation && (
+              <p className="mt-1 text-sm text-red-500">{errors.password_confirmation.message}</p>
+            )}
+          </div>
+        </>
+      )}
 
       <div>
         <label htmlFor="status" className="mb-2 block text-sm font-medium">

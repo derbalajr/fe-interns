@@ -1,36 +1,29 @@
-import { mockUsers } from "../mocks/users";
+import { apiGet, apiPost, apiPut } from "@/lib/fetcher";
 import type { User } from "../types/user";
 import type { UserFormValues } from "../schemas/user-schema";
 
 export async function getUsers(): Promise<User[]> {
-  return Promise.resolve([...mockUsers]);
+  const response = await apiGet<User[] | { data: User[] }>("/users");
+  // Handle both wrapped and unwrapped responses
+  if (response && typeof response === 'object' && 'data' in response) {
+    return response.data;
+  }
+  return response as User[];
 }
 
 export async function createUser(data: UserFormValues): Promise<User> {
-  const newUser: User = {
-    id: Date.now(),
-    ...data,
-  };
-
-  mockUsers.push(newUser);
-
-  return Promise.resolve(newUser);
+  return apiPost<User, UserFormValues>("/users", data);
 }
 
 export async function updateUser(
   id: number,
   data: UserFormValues,
 ): Promise<User> {
-  const index = mockUsers.findIndex((user) => user.id === id);
-
-  if (index === -1) {
-    throw new Error("User not found");
-  }
-
-  mockUsers[index] = {
-    ...mockUsers[index],
+  // Remove password fields from update if they're empty
+  const updateData = {
     ...data,
+    ...(data.password === "" && { password: undefined }),
+    ...(data.password_confirmation === "" && { password_confirmation: undefined }),
   };
-
-  return Promise.resolve(mockUsers[index]);
+  return apiPut<User, Partial<UserFormValues>>(`/users/${id}`, updateData);
 }

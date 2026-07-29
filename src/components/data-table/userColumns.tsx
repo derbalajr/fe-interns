@@ -54,14 +54,25 @@ export function getUserColumns(
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => <StatusPill status={row.original.status} />,
+      cell: ({ row }) => <StatusPill status={row.original.status as UserStatus} />,
     },
     {
       accessorKey: "role",
       header: "Role",
-      cell: ({ row }) => (
-        <span className="text-[#4c4c4c]">{row.original.role}</span>
-      ),
+      cell: ({ row }) => {
+        const user = row.original;
+        let roleName = "N/A";
+        if (typeof user.role === 'string') {
+          roleName = user.role;
+        } else if (user.role && typeof user.role === 'object' && 'name' in user.role) {
+          roleName = user.role.name;
+        } else if (user.roleObj?.name) {
+          roleName = user.roleObj.name;
+        }
+        return (
+          <span className="text-[#4c4c4c]">{roleName}</span>
+        );
+      },
     },
     {
       id: "actions",

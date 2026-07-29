@@ -188,7 +188,7 @@ export function AppLayout() {
         </div>
       </header>
 
-      <aside className="fixed left-[calc(50%-660px)] top-[102px] z-40 hidden w-11 flex-col items-center gap-3 xl:flex">
+      <aside className="fixed left-6 top-[102px] z-40 hidden w-11 flex-col items-center gap-3 xl:flex">
         <button
           type="button"
           aria-label="Applications"
