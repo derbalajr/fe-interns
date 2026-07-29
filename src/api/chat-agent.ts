@@ -1,28 +1,29 @@
-// Client for the onboarding-agent API.
+// Streaming client for the AI chat agent (POST /chat/stream, SSE).
 //
-// Notes from the integration guide that this file deliberately follows:
-//   - EventSource can't be used (POST + Authorization header), so we stream
-//     with fetch + a ReadableStream reader.
+// Gotchas this file follows (from the AI team's integration guide):
+//   - EventSource can't be used (POST + optional Authorization header), so we
+//     stream with fetch + a ReadableStream reader.
 //   - An SSE event can be split across network reads, so we buffer and only
 //     parse complete events (separated by a blank line).
-//   - credentials: "include" MUST be sent on every call — the conversation
-//     lives in httpOnly session/thread cookies. Miss it and every message
-//     starts a fresh, memoryless conversation.
-//   - The shared bearer token is exposed to the browser. Fine for the internal
-//     demo; do NOT ship it in a public build.
+//   - credentials: "include" carries the httpOnly session/thread cookies that
+//     hold the conversation — send it on every call, or each message starts a
+//     brand-new conversation with no memory.
 
-import type { ChatStreamEvent, FloorMap } from "@/types/onboarding-agent";
+import type { ChatStreamEvent, FloorMap } from "@/types/chat-agent";
 
-const API_BASE = import.meta.env.VITE_ONBOARDING_API_BASE?.replace(/\/$/, "");
-const API_TOKEN = import.meta.env.VITE_ONBOARDING_API_TOKEN;
+// Static default so production works with no env var. Override with
+// VITE_CHAT_API_BASE only for local dev or a different deployment.
+const DEFAULT_CHAT_API_BASE = "http://10.10.67.51:8000";
 
-function requireConfig(): { base: string; token: string } {
-  if (!API_BASE || !API_TOKEN) {
-    throw new Error(
-      "Onboarding agent is not configured. Set VITE_ONBOARDING_API_BASE and VITE_ONBOARDING_API_TOKEN.",
-    );
-  }
-  return { base: API_BASE, token: API_TOKEN };
+const API_BASE = (
+  import.meta.env.VITE_CHAT_API_BASE || DEFAULT_CHAT_API_BASE
+).replace(/\/$/, "");
+const API_TOKEN = import.meta.env.VITE_CHAT_API_TOKEN;
+
+// The bearer token is optional: local deployments run with
+// ALLOW_UNAUTHENTICATED=true, so we only send Authorization when it's set.
+function authHeaders(): Record<string, string> {
+  return API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {};
 }
 
 type StreamHandlers = {
@@ -35,21 +36,20 @@ export type StreamResult = { session_id: string; thread_id: string };
 
 /**
  * Stream a reply from POST /chat/stream. Resolves with the session/thread ids
- * once the "done" event arrives; rejects on an "error" event or a non-2xx
- * status. Tokens and the (optional, at-most-once) floor map are delivered via
- * the handlers as they arrive.
+ * on the "done" event; rejects on an "error" event or a non-2xx status. Tokens
+ * and the (optional, at-most-once) floor map arrive via the handlers.
  */
 export async function streamChat(
   prompt: string,
   { onToken, onFloorMap, signal }: StreamHandlers,
 ): Promise<StreamResult> {
-  const { base, token } = requireConfig();
+  const base = API_BASE;
 
   const res = await fetch(`${base}/chat/stream`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      ...authHeaders(),
     },
     credentials: "include", // REQUIRED — carries the conversation cookies
     body: JSON.stringify({ prompt }),
@@ -108,11 +108,11 @@ export async function streamChat(
 
 /** Clear the conversation cookies so the next message starts a new thread. */
 export async function startNewChat(): Promise<void> {
-  const { base, token } = requireConfig();
+  const base = API_BASE;
 
   const res = await fetch(`${base}/new-chat`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: authHeaders(),
     credentials: "include",
   });
 

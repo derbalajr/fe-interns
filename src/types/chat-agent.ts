@@ -1,4 +1,4 @@
-// Types for the onboarding-agent API (streaming chat + floor-map navigation).
+// Types for the AI chat agent (streaming chat + floor-map navigation).
 // See the AI team's frontend integration guide for the contract.
 
 export type FloorMap = {
