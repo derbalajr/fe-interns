@@ -38,9 +38,9 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
+          <DialogTitle>Edit Agent</DialogTitle>
 
-          <DialogDescription>Update the user's information.</DialogDescription>
+          <DialogDescription>Update the agent's information.</DialogDescription>
         </DialogHeader>
 
         {renderedUser && <UserForm user={renderedUser} onSuccess={onClose} />}

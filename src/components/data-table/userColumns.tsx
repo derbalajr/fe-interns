@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getUserRoleName, getUserStatus } from "@/lib/user";
 import type { User, UserStatus } from "@/types/user";
 
 const statusStyles: Record<UserStatus, string> = {
@@ -54,25 +55,30 @@ export function getUserColumns(
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => <StatusPill status={row.original.status as UserStatus} />,
+      cell: ({ row }) => <StatusPill status={getUserStatus(row.original)} />,
     },
     {
       accessorKey: "role",
       header: "Role",
-      cell: ({ row }) => {
-        const user = row.original;
-        let roleName = "N/A";
-        if (typeof user.role === 'string') {
-          roleName = user.role;
-        } else if (user.role && typeof user.role === 'object' && 'name' in user.role) {
-          roleName = user.role.name;
-        } else if (user.roleObj?.name) {
-          roleName = user.roleObj.name;
-        }
-        return (
-          <span className="text-[#4c4c4c]">{roleName}</span>
-        );
-      },
+      cell: ({ row }) => (
+        <span className="text-[#4c4c4c]">
+          {getUserRoleName(row.original) || "—"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "position",
+      header: "Position",
+      cell: ({ row }) => (
+        <span className="text-[#4c4c4c]">{row.original.position ?? "—"}</span>
+      ),
+    },
+    {
+      accessorKey: "phone",
+      header: "Phone Number",
+      cell: ({ row }) => (
+        <span className="text-[#4c4c4c]">{row.original.phone ?? "—"}</span>
+      ),
     },
     {
       id: "actions",
@@ -96,7 +102,7 @@ export function getUserColumns(
             <DropdownMenuContent align="end" className="min-w-[140px]">
               <DropdownMenuItem onClick={() => onEdit(row.original)}>
                 <Pencil className="h-4 w-4" />
-                Edit user
+                Edit agent
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

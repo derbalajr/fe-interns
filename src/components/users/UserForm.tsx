@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useCreateUserMutation } from "@/hooks/use-create-user-mutation";
 import { useUpdateUserMutation } from "@/hooks/use-update-user-mutation";
 import { useRolesQuery } from "@/hooks/use-roles-query";
-import { useAuth } from "@/context/AuthContext";
 import { createUserSchema, updateUserSchema, type UserFormValues } from "@/schemas/user-schema";
+import { getUserRoleId, getUserStatus } from "@/lib/user";
 import type { User } from "@/types/user";
 
 type UserFormProps = {
@@ -21,7 +21,6 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
   const createMutation = useCreateUserMutation();
   const updateMutation = useUpdateUserMutation();
   const { data: roles = [], isLoading: isLoadingRoles } = useRolesQuery();
-  const { user: currentUser } = useAuth();
 
   const {
     register,
@@ -46,27 +45,45 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
         email: user.email,
         password: "",
         password_confirmation: "",
-        role_id: user.roleObj?.id,
-        status: user.status as "Active" | "Inactive" | undefined,
+        role_id: getUserRoleId(user),
+        status: getUserStatus(user),
       });
     }
   }, [user, reset]);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
+      // The backend models account state as an `active` boolean, not a status
+      // string. Tenant is assigned server-side from the creator, so we don't
+      // send it from here.
+      const active = values.status === "Active";
+
       if (user) {
         await updateMutation.mutateAsync({
           id: user.id,
-          data: values,
+          data: {
+            name: values.name,
+            email: values.email,
+            role_id: values.role_id,
+            active,
+            ...(values.password
+              ? {
+                  password: values.password,
+                  password_confirmation: values.password_confirmation,
+                }
+              : {}),
+          },
         });
         toast.success("User updated");
       } else {
-        // Add current user's tenant to the new user data
-        const createData = {
-          ...values,
-          tenant: currentUser?.tenant,
-        };
-        await createMutation.mutateAsync(createData);
+        await createMutation.mutateAsync({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          password_confirmation: values.password_confirmation,
+          role_id: values.role_id,
+          active,
+        });
         toast.success("User created");
       }
 
@@ -119,7 +136,12 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
 
         <select
           id="role_id"
-          {...register("role_id", { valueAsNumber: true })}
+          {...register("role_id", {
+            setValueAs: (value) =>
+              value === "" || value === null || value === undefined
+                ? undefined
+                : Number(value),
+          })}
           className="h-10 w-full rounded-md border bg-background px-3"
           disabled={isLoadingRoles}
         >
