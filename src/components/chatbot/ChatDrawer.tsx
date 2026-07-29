@@ -33,6 +33,7 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [zoomedMap, setZoomedMap] = useState<FloorMap | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -194,11 +195,21 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
                         }`}
                       >
                         {message.floorMap && (
-                          <img
-                            src={message.floorMap.url}
-                            alt={`Route to ${message.floorMap.destination}`}
-                            className="w-full rounded-lg border border-[#e5e5e5] bg-white"
-                          />
+                          <button
+                            type="button"
+                            onClick={() => setZoomedMap(message.floorMap!)}
+                            title="Click to enlarge"
+                            className="group relative block w-full overflow-hidden rounded-lg border border-[#e5e5e5] bg-white"
+                          >
+                            <img
+                              src={message.floorMap.url}
+                              alt={`Route to ${message.floorMap.destination}`}
+                              className="w-full transition group-hover:opacity-90"
+                            />
+                            <span className="absolute bottom-1 right-1 rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100">
+                              Click to enlarge
+                            </span>
+                          </button>
                         )}
                         {message.content ? (
                           <p className="whitespace-pre-wrap">
@@ -245,6 +256,51 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
           </div>
         </div>
       </aside>
+
+      {/* Floor-map lightbox */}
+      {zoomedMap && (
+        <div
+          onClick={() => setZoomedMap(null)}
+          className="fixed inset-0 z-[110] flex flex-col items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-[#efefef] px-5 py-3">
+              <div>
+                <p className="text-sm font-semibold capitalize text-[#202020]">
+                  {zoomedMap.destination}
+                </p>
+                <p className="text-xs text-[#777]">{zoomedMap.route}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={zoomedMap.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#8d7550] transition hover:bg-[#f5f5f5]"
+                >
+                  Open in new tab
+                </a>
+                <button
+                  onClick={() => setZoomedMap(null)}
+                  className="rounded-lg p-2 transition hover:bg-[#f5f5f5]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="overflow-auto p-4">
+              <img
+                src={zoomedMap.url}
+                alt={`Route to ${zoomedMap.destination}`}
+                className="mx-auto max-w-full"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
