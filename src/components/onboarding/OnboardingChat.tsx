@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle, Send, RotateCcw, X } from "lucide-react";
 
-import { startNewChat, streamChat } from "@/api/onboarding-agent";
-import type { ChatMessage, FloorMap } from "@/types/onboarding-agent";
+import { startNewChat, streamChat } from "@/api/chat-agent";
+import type { ChatMessage, FloorMap } from "@/types/chat-agent";
 
 const SUGGESTIONS = [
   "Where is HR?",

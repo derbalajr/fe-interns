@@ -1,12 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { useChatMutation } from "@/hooks/use-chat-mutation";
-import {
-  Bot,
-  Send,
-  Sparkles,
-  User,
-  X,
-} from "lucide-react";
+import { Bot, Send, Sparkles, User, X } from "lucide-react";
+
+import { streamChat } from "@/api/chat-agent";
+import type { FloorMap } from "@/types/chat-agent";
 
 type ChatDrawerProps = {
   open: boolean;
@@ -14,9 +10,10 @@ type ChatDrawerProps = {
 };
 
 type Message = {
-  id: number;
+  id: string;
   role: "assistant" | "user";
   content: string;
+  floorMap?: FloorMap;
 };
 
 const suggestedPrompts = [
@@ -26,14 +23,19 @@ const suggestedPrompts = [
   "What follow-ups are overdue?",
 ];
 
-export function ChatDrawer({
-  open,
-  onClose,
-}: ChatDrawerProps) {
+function newId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+}
+
+export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -41,60 +43,50 @@ export function ChatDrawer({
     }
   }, [open]);
 
-  const { mutateAsync: sendChatMessage, isPending } =
-    useChatMutation();
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+  }, [messages]);
 
   const sendMessage = async (text?: string) => {
     const value = (text ?? input).trim();
+    if (!value || isStreaming) return;
 
-    if (!value || isPending) return;
-
-    const userMessageId = Date.now();
-    const thinkingId = userMessageId + 1;
-
+    const assistantId = newId();
     setMessages((prev) => [
       ...prev,
-      {
-        id: userMessageId,
-        role: "user",
-        content: value,
-      },
-      {
-        id: thinkingId,
-        role: "assistant",
-        content: "Thinking...",
-      },
+      { id: newId(), role: "user", content: value },
+      { id: assistantId, role: "assistant", content: "" },
     ]);
-
     setInput("");
+    setIsStreaming(true);
 
     try {
-      const response = await sendChatMessage({
-        question: value,
+      await streamChat(value, {
+        onToken: (content) =>
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId ? { ...m, content: m.content + content } : m,
+            ),
+          ),
+        onFloorMap: (map: FloorMap) =>
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId ? { ...m, floorMap: map } : m,
+            ),
+          ),
       });
-
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Sorry, something went wrong. Please try again.";
       setMessages((prev) =>
-        prev.map((message) =>
-          message.id === thinkingId
-            ? {
-                ...message,
-                content: response.answer,
-              }
-            : message
-        )
+        prev.map((m) =>
+          m.id === assistantId ? { ...m, content: m.content || message } : m,
+        ),
       );
-    } catch {
-      setMessages((prev) =>
-        prev.map((message) =>
-          message.id === thinkingId
-            ? {
-                ...message,
-                content:
-                  "Sorry, something went wrong. Please try again.",
-              }
-            : message
-        )
-      );
+    } finally {
+      setIsStreaming(false);
     }
   };
 
@@ -104,18 +96,14 @@ export function ChatDrawer({
       <div
         onClick={onClose}
         className={`fixed inset-0 z-[90] bg-black/20 backdrop-blur-[2px] transition-all duration-300 ${
-          open
-            ? "opacity-100"
-            : "pointer-events-none opacity-0"
+          open ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
 
       {/* Drawer */}
       <aside
         className={`fixed right-4 top-4 bottom-4 z-[100] flex w-[420px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-transform duration-300 ${
-          open
-            ? "translate-x-0"
-            : "translate-x-[110%]"
+          open ? "translate-x-0" : "translate-x-[110%]"
         }`}
       >
         {/* Header */}
@@ -126,13 +114,8 @@ export function ChatDrawer({
             </div>
 
             <div>
-              <h2 className="font-semibold text-[#202020]">
-                Ask Keystone
-              </h2>
-
-              <p className="text-xs text-[#777]">
-                AI CRM Assistant
-              </p>
+              <h2 className="font-semibold text-[#202020]">Ask Keystone</h2>
+              <p className="text-xs text-[#777]">AI CRM Assistant</p>
             </div>
           </div>
 
@@ -146,15 +129,12 @@ export function ChatDrawer({
 
         {/* Content */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-5">
             {messages.length === 0 ? (
               <>
                 <div className="mt-8 text-center">
                   <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f6f3ed]">
-                    <Bot
-                      className="text-[#8d7550]"
-                      size={30}
-                    />
+                    <Bot className="text-[#8d7550]" size={30} />
                   </div>
 
                   <h3 className="text-xl font-semibold">
@@ -190,19 +170,15 @@ export function ChatDrawer({
                   <div
                     key={message.id}
                     className={`flex ${
-                      message.role === "user"
-                        ? "justify-end"
-                        : "justify-start"
+                      message.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
                     <div
                       className={`flex max-w-[85%] gap-3 ${
-                        message.role === "user"
-                          ? "flex-row-reverse"
-                          : ""
+                        message.role === "user" ? "flex-row-reverse" : ""
                       }`}
                     >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ececec]">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ececec]">
                         {message.role === "assistant" ? (
                           <Bot size={18} />
                         ) : (
@@ -211,13 +187,28 @@ export function ChatDrawer({
                       </div>
 
                       <div
-                        className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                        className={`space-y-2 rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                           message.role === "assistant"
                             ? "bg-[#f5f5f5]"
                             : "bg-[#1c2541] text-white"
                         }`}
                       >
-                        {message.content}
+                        {message.floorMap && (
+                          <img
+                            src={message.floorMap.url}
+                            alt={`Route to ${message.floorMap.destination}`}
+                            className="w-full rounded-lg border border-[#e5e5e5] bg-white"
+                          />
+                        )}
+                        {message.content ? (
+                          <p className="whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        ) : (
+                          message.role === "assistant" && (
+                            <p className="text-[#999]">Thinking…</p>
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -232,26 +223,20 @@ export function ChatDrawer({
               <input
                 ref={inputRef}
                 value={input}
-                disabled={isPending}
-                onChange={(e) =>
-                  setInput(e.target.value)
-                }
+                disabled={isStreaming}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     sendMessage();
                   }
                 }}
-                placeholder={
-                  isPending
-                    ? "Thinking..."
-                    : "Ask Keystone..."
-                }
+                placeholder={isStreaming ? "Thinking..." : "Ask Keystone..."}
                 className="flex-1 bg-transparent text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
               />
 
               <button
                 onClick={() => sendMessage()}
-                disabled={isPending}
+                disabled={isStreaming || !input.trim()}
                 className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1c2541] text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={16} />
