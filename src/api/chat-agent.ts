@@ -88,7 +88,8 @@ export async function streamChat(
         if (payload.type === "token") {
           onToken(payload.content);
         } else if (payload.type === "floor_map") {
-          onFloorMap({ type: "floor_map", ...payload });
+          // payload is already { type: "floor_map", destination, url, route }.
+          onFloorMap(payload);
         } else if (payload.type === "error") {
           throw new Error(payload.detail);
         } else if (payload.type === "done") {
