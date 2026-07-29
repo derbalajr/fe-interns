@@ -4,6 +4,8 @@ export type AppModule = {
   label: string;
   path: string;
   tenants?: TenantId[];
+  /** When true, the module is hidden from agents (managers/admins only). */
+  managerOnly?: boolean;
 };
 
 export const APP_MODULES: AppModule[] = [
@@ -34,5 +36,6 @@ export const APP_MODULES: AppModule[] = [
   {
     label: "Users",
     path: "/users",
+    managerOnly: true,
   },
 ];

@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,18 +46,25 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
   }, [user, reset]);
 
   const onSubmit = handleSubmit(async (values) => {
-    if (user) {
-      await updateMutation.mutateAsync({
-        id: user.id,
-        data: values,
-      });
-    } else {
-      await createMutation.mutateAsync(values);
+    try {
+      if (user) {
+        await updateMutation.mutateAsync({
+          id: user.id,
+          data: values,
+        });
+        toast.success("User updated");
+      } else {
+        await createMutation.mutateAsync(values);
+        toast.success("User created");
+      }
+
+      reset();
+      onSuccess?.();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     }
-
-    reset();
-
-    onSuccess?.();
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;

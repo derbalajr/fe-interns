@@ -1,15 +1,37 @@
 import { useMemo, useState } from "react";
 
-import { Plus, Search } from "lucide-react";
+import { ChevronDown, Plus, Search } from "lucide-react";
 
 import { CreateUserDialog } from "@/components/users/CreateUserDialog";
 import { EditUserDialog } from "@/components/users/EditUserDialog";
 import { DataTable } from "@/components/data-table/DataTable";
 import { getUserColumns } from "@/components/data-table/userColumns";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useUsersQuery } from "@/hooks/use-users-query";
 import type { User } from "@/types/user";
+
+function FilterSelect({
+  value,
+  onChange,
+  children,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-10 appearance-none rounded-full border border-[#e5e5e5] bg-white py-2 pr-9 pl-4 text-[13px] text-[#4c4c4c] outline-none focus:border-[#d0ccc2]"
+      >
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9a9a]" />
+    </div>
+  );
+}
 
 export default function UsersPage() {
   const { data = [], isLoading, isError } = useUsersQuery();
@@ -35,92 +57,68 @@ export default function UsersPage() {
   }, [data, search, roleFilter, statusFilter]);
 
   const columns = useMemo(
-    () =>
-      getUserColumns((user) => {
-        setSelectedUser(user);
-      }),
+    () => getUserColumns((user) => setSelectedUser(user)),
     [],
   );
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        Loading users...
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex items-center justify-center py-20 text-red-500">
-        Failed to load users.
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-[#242424]">
+          Users
+        </h1>
+        <p className="mt-1 text-[13px] text-[#8a8a8a]">
+          Manage your CRM users and permissions.
+        </p>
+      </div>
 
-          <p className="mt-1 text-muted-foreground">
-            Manage your CRM users and permissions.
-          </p>
+      {/* Toolbar */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9a9a]" />
+          <input
+            placeholder="Search users..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-10 w-full rounded-full border border-[#e5e5e5] bg-white pr-4 pl-10 text-[13px] text-[#4c4c4c] outline-none placeholder:text-[#9a9a9a] focus:border-[#d0ccc2]"
+          />
         </div>
+
+        <FilterSelect value={statusFilter} onChange={setStatusFilter}>
+          <option value="All">Status: All</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </FilterSelect>
+
+        <FilterSelect value={roleFilter} onChange={setRoleFilter}>
+          <option value="All">Role: All</option>
+          <option value="Manager">Manager</option>
+          <option value="Agent">Agent</option>
+        </FilterSelect>
 
         <CreateUserDialog
           trigger={
-            <Button className="gap-2">
-              <Plus size={18} />
+            <Button className="h-10 gap-2 rounded-full bg-[#242424] px-5 text-[13px] hover:bg-[#333333]">
+              <Plus className="h-4 w-4" />
               New User
             </Button>
           }
         />
       </div>
 
-      {/* Toolbar */}
-      <div className="rounded-xl border bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-          <div className="relative flex-1">
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-
-            <Input
-              placeholder="Search users..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="h-10 rounded-md border bg-background px-3 text-sm"
-          >
-            <option value="All">All Roles</option>
-            <option value="Manager">Manager</option>
-            <option value="Agent">Agent</option>
-          </select>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-10 rounded-md border bg-background px-3 text-sm"
-          >
-            <option value="All">All Status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
-      </div>
-
       {/* Users Table */}
-      <DataTable columns={columns} data={users} />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20 text-sm text-[#8a8a8a]">
+          Loading users...
+        </div>
+      ) : isError ? (
+        <div className="flex items-center justify-center py-20 text-sm text-rose-500">
+          Failed to load users.
+        </div>
+      ) : (
+        <DataTable columns={columns} data={users} />
+      )}
 
       {/* Edit Dialog */}
       <EditUserDialog

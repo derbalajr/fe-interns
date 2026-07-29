@@ -24,6 +24,7 @@ import {
 
 import { APP_MODULES } from "@/constants/modules";
 import { useAuth } from "@/context/AuthContext";
+import { canManageUsers } from "@/lib/permissions";
 import { useTenant } from "@/hooks/use-tenant";
 
 const iconMap = {
@@ -75,6 +76,10 @@ export function AppLayout() {
   }
 
   const modules = APP_MODULES.filter((module) => {
+    if (module.managerOnly && !canManageUsers(user)) {
+      return false;
+    }
+
     if (!module.tenants) {
       return true;
     }
