@@ -26,6 +26,7 @@ import { APP_MODULES } from "@/constants/modules";
 import { useAuth } from "@/context/AuthContext";
 import { useTenant } from "@/hooks/use-tenant";
 import { ChatDrawer } from "@/components/chatbot/ChatDrawer";
+import { OnboardingChat } from "@/components/onboarding/OnboardingChat";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
@@ -249,6 +250,8 @@ export function AppLayout() {
         open={isChatOpen}
         onClose={() => setIsChatOpen(false)}
       />
+
+      <OnboardingChat />
     </>
   );
 }
