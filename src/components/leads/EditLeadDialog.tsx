@@ -20,22 +20,39 @@ type EditLeadDialogProps = {
 
 export function EditLeadDialog({ lead }: EditLeadDialogProps) {
   const [open, setOpen] = useState(false);
+
   const updateMutation = useUpdateLeadMutation();
 
-  const handleSubmit = async (data: LeadPayload) => {
-    await updateMutation.mutateAsync({
-      id: lead.id,
-      data,
-    });
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
 
-    setOpen(false);
+    if (nextOpen) {
+      updateMutation.reset();
+    }
+  };
+
+  const handleSubmit = async (data: LeadPayload) => {
+    try {
+      await updateMutation.mutateAsync({
+        id: lead.id,
+        data,
+      });
+
+      setOpen(false);
+    } catch {
+      // The form or mutation displays the request error.
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
-          <Button type="button" variant="outline" className="rounded-xl">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 rounded-xl border-[#e2e2e2] bg-white px-4 text-xs font-medium text-[#777777] shadow-[0_2px_6px_rgba(0,0,0,0.035)] hover:bg-[#f8f8f8] hover:text-[#333333]"
+          >
             Edit Lead
           </Button>
         }
@@ -51,10 +68,11 @@ export function EditLeadDialog({ lead }: EditLeadDialogProps) {
         </DialogHeader>
 
         <LeadForm
+          key={lead.id}
           lead={lead}
           isPending={updateMutation.isPending}
           onSubmit={handleSubmit}
-          onCancel={() => setOpen(false)}
+          onCancel={() => handleOpenChange(false)}
         />
       </DialogContent>
     </Dialog>

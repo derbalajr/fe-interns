@@ -44,11 +44,12 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
   const changeStageMutation = useChangeLeadStage();
 
   const availableStages = allowedTransitions[lead.stage] ?? [];
+  const hasAvailableTransitions = availableStages.length > 0;
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
 
-    if (nextOpen) {
+    if (!nextOpen) {
       setStage("");
       changeStageMutation.reset();
     }
@@ -67,9 +68,9 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
         },
       });
 
-      setOpen(false);
+      handleOpenChange(false);
     } catch {
-      // The mutation error is rendered inside the dialog.
+      // The mutation error is displayed inside the dialog.
     }
   };
 
@@ -78,18 +79,16 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
       ? changeStageMutation.error.message
       : null;
 
-  const hasAvailableTransitions = availableStages.length > 0;
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           <Button
             type="button"
-            className="rounded-xl"
             disabled={!hasAvailableTransitions}
+            className="h-9 rounded-xl bg-[#e9e5dc] px-4 text-xs font-medium text-[#44413c] shadow-[0_2px_6px_rgba(0,0,0,0.04)] hover:bg-[#dfd9cd] disabled:cursor-not-allowed disabled:bg-[#f0eeea] disabled:text-[#aaa7a0] disabled:opacity-100"
           >
-            Change Stage
+            Advance Stage
           </Button>
         }
       />
@@ -112,9 +111,11 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
 
               <Select
                 value={stage}
-                onValueChange={(value) =>
-                  setStage(value as LeadFormValues["stage"])
-                }
+                onValueChange={(value) => {
+                  if (value !== null) {
+                    setStage(value as LeadFormValues["stage"]);
+                  }
+                }}
                 disabled={changeStageMutation.isPending}
               >
                 <SelectTrigger id="lead-stage">
@@ -131,7 +132,7 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
               </Select>
             </div>
           ) : (
-            <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+            <p className="rounded-xl border border-[#e5e5e5] bg-[#fafafa] p-3 text-sm text-[#666666]">
               No further stage transitions are available for this lead.
             </p>
           )}
@@ -145,12 +146,12 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
             </p>
           )}
 
-          <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
+          <div className="flex justify-end gap-3 border-t border-[#e8e8e8] pt-4">
             <Button
               type="button"
               variant="outline"
               disabled={changeStageMutation.isPending}
-              onClick={() => setOpen(false)}
+              onClick={() => handleOpenChange(false)}
             >
               Cancel
             </Button>
@@ -161,7 +162,9 @@ export function UpdateStageDialog({ lead }: UpdateStageDialogProps) {
                 disabled={changeStageMutation.isPending || !stage}
                 onClick={handleSubmit}
               >
-                {changeStageMutation.isPending ? "Updating..." : "Update Stage"}
+                {changeStageMutation.isPending
+                  ? "Updating..."
+                  : "Update Stage"}
               </Button>
             )}
           </div>

@@ -7,16 +7,37 @@ import { Button } from "@/components/ui/button";
 import type { Lead } from "@/types/lead";
 
 const PIPELINE_STAGES = [
-  "New",
-  "Contacted",
-  "Qualified",
+  {
+    value: "new",
+    label: "New",
+  },
+  {
+    value: "contacted",
+    label: "Contacted",
+  },
+  {
+    value: "qualified",
+    label: "Qualified",
+  },
+  {
+    value: "viewing",
+    label: "Viewing",
+  },
+  {
+    value: "negotiation",
+    label: "Negotiation",
+  },
+  {
+    value: "won",
+    label: "Won",
+  },
 ] as const;
 
 type LeadPipelineProps = {
   lead: Lead;
 };
 
-function getStageIndex(stage?: string | null) {
+function getStageIndex(stage?: string | null): number {
   if (!stage) {
     return -1;
   }
@@ -25,7 +46,7 @@ function getStageIndex(stage?: string | null) {
 
   return PIPELINE_STAGES.findIndex(
     (pipelineStage) =>
-      pipelineStage.toLowerCase() === normalizedStage,
+      pipelineStage.value === normalizedStage,
   );
 }
 
@@ -34,65 +55,73 @@ export function LeadPipeline({ lead }: LeadPipelineProps) {
   const currentStageIndex = getStageIndex(currentStage);
   const isUnqualified = currentStage === "unqualified";
 
-  return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-8">
-      <div className="overflow-x-auto pb-3">
-        <div className="min-w-[520px]">
-          <div className="relative">
-            <div className="absolute left-[8%] right-[8%] top-6 h-px border-t border-dashed border-slate-400" />
+  const visualStageIndex = isUnqualified
+    ? -1
+    : currentStageIndex;
 
-            {currentStageIndex > 0 && (
+  return (
+    <section className="rounded-2xl border border-[#e7e7e7] bg-[#fbfbfb] px-7 py-6 shadow-[0_2px_7px_rgba(0,0,0,0.035)]">
+      <div className="overflow-x-auto pb-2">
+        <div className="min-w-[820px]">
+          <div className="relative">
+            <div className="absolute left-[4.5%] right-[4.5%] top-[18px] border-t border-dashed border-[#a9a9a9]" />
+
+            {visualStageIndex > 0 && (
               <div
-                className="absolute left-[8%] top-6 h-px border-t border-solid border-slate-800"
+                className="absolute left-[4.5%] top-[18px] border-t border-solid border-[#171717]"
                 style={{
                   width: `${
-                    (currentStageIndex / (PIPELINE_STAGES.length - 1)) * 84
+                    (visualStageIndex /
+                      (PIPELINE_STAGES.length - 1)) *
+                    91
                   }%`,
                 }}
               />
             )}
 
-            <div className="relative grid grid-cols-3">
+            <div className="relative grid grid-cols-6">
               {PIPELINE_STAGES.map((stage, index) => {
                 const isCompleted =
-                  currentStageIndex >= 0 && index < currentStageIndex;
+                  visualStageIndex >= 0 &&
+                  index < visualStageIndex;
 
                 const isCurrent =
-                  currentStageIndex >= 0 && index === currentStageIndex;
+                  visualStageIndex >= 0 &&
+                  index === visualStageIndex;
 
                 return (
                   <div
-                    key={stage}
+                    key={stage.value}
                     className="flex flex-col items-center"
                   >
                     <div
                       className={[
-                        "relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition",
+                        "relative z-10 flex h-9 w-9 items-center justify-center rounded-full border transition",
                         isCompleted
-                          ? "border-slate-950 bg-slate-950 text-white shadow-md"
+                          ? "border-[#111111] bg-[#111111] text-white"
                           : "",
                         isCurrent
-                          ? "border-slate-950 bg-white text-slate-950 shadow-md"
+                          ? "border-2 border-[#111111] bg-white text-[#111111]"
                           : "",
                         !isCompleted && !isCurrent
-                          ? "border-slate-300 bg-slate-200 text-slate-400"
+                          ? "border-[#c9c9c9] bg-[#e5e3e3] text-[#999999]"
                           : "",
                       ].join(" ")}
                     >
                       {isCompleted ? (
-                        <Check className="h-5 w-5" />
+                        <Check className="h-4 w-4" />
                       ) : null}
                     </div>
 
                     <p
                       className={[
-                        "mt-3 text-sm font-medium",
+                        "mt-2.5 text-[11px] font-medium",
                         isCompleted || isCurrent
-                          ? "text-slate-950"
-                          : "text-slate-500",
+                          ? "text-[#242424]"
+                          : "text-[#555555]",
                       ].join(" ")}
                     >
-                      {stage}
+                      {stage.label}
                     </p>
                   </div>
                 );
@@ -103,20 +132,20 @@ export function LeadPipeline({ lead }: LeadPipelineProps) {
       </div>
 
       {isUnqualified && (
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        <div className="mt-4 rounded-xl border border-[#f4cccc] bg-[#fff2f2] px-4 py-3 text-xs font-medium text-[#a84444]">
           This lead has been marked as unqualified.
         </div>
       )}
 
       {!isUnqualified && currentStageIndex === -1 && (
-        <p className="mt-2 text-sm text-amber-700">
+        <p className="mt-4 text-xs text-[#9a6c22]">
           {currentStage
-            ? `The current stage “${currentStage}” is not supported by the pipeline.`
+            ? `The current stage “${currentStage}” is not supported by this pipeline.`
             : "This lead does not have a stage yet."}
         </p>
       )}
 
-      <div className="mt-7 flex flex-wrap gap-3">
+      <div className="mt-7 flex flex-wrap gap-2">
         <UpdateStageDialog lead={lead} />
 
         <AssignAgentDialog lead={lead} />
@@ -127,7 +156,7 @@ export function LeadPipeline({ lead }: LeadPipelineProps) {
           type="button"
           variant="outline"
           disabled
-          className="rounded-xl"
+          className="h-9 rounded-xl border-[#e2e2e2] bg-white px-4 text-xs font-medium text-[#999999] shadow-[0_2px_6px_rgba(0,0,0,0.035)] disabled:opacity-100"
         >
           Log Activity
         </Button>

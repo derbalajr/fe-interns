@@ -1,57 +1,50 @@
-import { Inbox } from "lucide-react";
+import { Plus } from "lucide-react";
 
+import { AddDealModal } from "@/components/deals/AddDealModal";
 import { formatCurrency } from "@/lib/format";
 import type { Deal } from "@/types/deal";
 
 import { DealCard } from "./DealCard";
 
-interface DealColumnProps {
+type DealColumnProps = {
+  stage: Deal["stage"];
   title: string;
   deals: Deal[];
   onView: (deal: Deal) => void;
   onEdit: (deal: Deal) => void;
-}
+};
 
 const stageStyles: Record<
   string,
   {
-    dot: string;
-    badge: string;
+    count: string;
   }
 > = {
   new: {
-    dot: "bg-violet-500",
-    badge: "bg-violet-100 text-violet-700",
-  },
-  contacted: {
-    dot: "bg-sky-500",
-    badge: "bg-sky-100 text-sky-700",
+    count: "bg-[#f4f0ff] text-[#8b72d9]",
   },
   qualified: {
-    dot: "bg-emerald-500",
-    badge: "bg-emerald-100 text-emerald-700",
+    count: "bg-[#e8f8f1] text-[#368267]",
+  },
+  contacted: {
+    count: "bg-[#edf4ff] text-[#4c8fde]",
   },
   negotiation: {
-    dot: "bg-amber-500",
-    badge: "bg-amber-100 text-amber-700",
+    count: "bg-[#f2f2f2] text-[#777777]",
   },
   won: {
-    dot: "bg-green-500",
-    badge: "bg-green-100 text-green-700",
-  },
-  lost: {
-    dot: "bg-red-500",
-    badge: "bg-red-100 text-red-700",
+    count: "bg-[#fff5dc] text-[#b68425]",
   },
 };
 
 export function DealColumn({
+  stage,
   title,
   deals,
   onView,
   onEdit,
 }: DealColumnProps) {
-  const style = stageStyles[title] ?? stageStyles.new;
+  const style = stageStyles[stage] ?? stageStyles.new;
 
   const total = deals.reduce(
     (sum, deal) => sum + Number(deal.value ?? 0),
@@ -59,55 +52,51 @@ export function DealColumn({
   );
 
   return (
-    <div className="flex h-full w-72 shrink-0 flex-col rounded-2xl border border-slate-300/60 bg-slate-100/70 transition-colors duration-200 hover:bg-slate-100">
-      {/* Header */}
-      <div className="border-b border-slate-200 px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span
-              className={`h-2.5 w-2.5 rounded-full ${style.dot}`}
-            />
-
-            <h2 className="text-[15px] font-semibold capitalize text-slate-900">
-              {title}
-            </h2>
-          </div>
+    <section className="flex min-h-[430px] w-[225px] shrink-0 flex-col rounded-2xl border border-[#e8e8e8] bg-[#fafafa] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+      <header>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-[12px] font-semibold text-[#282828]">
+            {title}
+          </h2>
 
           <span
-            className={`flex h-6 min-w-6 items-center justify-center rounded-full px-2 text-xs font-semibold ${style.badge}`}
+            className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full px-2 text-[10px] font-medium ${style.count}`}
           >
             {deals.length}
           </span>
         </div>
 
-        <p className="mt-2 text-lg font-bold text-slate-900">
+        <p className="mt-2 text-[11px] text-[#555555]">
           {formatCurrency(total)}
         </p>
-      </div>
+      </header>
 
-      {/* Cards */}
-      <div className="flex-1 overflow-y-auto p-3">
-        {deals.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-slate-400">
-            <Inbox size={28} strokeWidth={1.75} />
+      <div className="mt-5 flex flex-1 flex-col gap-3">
+        {deals.map((deal) => (
+          <DealCard
+            key={deal.id}
+            deal={deal}
+            onView={onView}
+            onEdit={onEdit}
+          />
+        ))}
 
-            <p className="mt-3 text-sm font-medium">
-              No deals yet
+        {deals.length === 0 && (
+          <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-[#dddddd] bg-white">
+            <p className="text-[10px] text-[#999999]">
+              No deals
             </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {deals.map((deal) => (
-              <DealCard
-                key={deal.id}
-                deal={deal}
-                onView={onView}
-                onEdit={onEdit}
-              />
-            ))}
           </div>
         )}
       </div>
-    </div>
+
+      <div className="mt-5 flex justify-center">
+        <AddDealModal
+          triggerLabel="Add Deal"
+          triggerIcon={<Plus className="h-4 w-4" />}
+          triggerClassName="h-9 rounded-xl border border-[#e1e1e1] bg-white px-4 text-xs text-[#333333] shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:bg-[#f7f7f7]"
+        />
+      </div>
+    </section>
   );
 }

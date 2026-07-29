@@ -7,7 +7,7 @@ export interface Deal {
   agent_id: number;
 
   stage: DealStage;
-  value: number;
+  value: number | string;
   expected_close: string | null;
 
   lead: {
@@ -38,7 +38,7 @@ export interface PaginationLink {
 
 export interface PaginationMeta {
   current_page: number;
-  from: number |null;
+  from: number | null;
   last_page: number;
   path: string;
   per_page: number;

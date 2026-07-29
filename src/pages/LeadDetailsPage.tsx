@@ -11,12 +11,17 @@ import { useLeadQuery } from "@/hooks/use-lead-query";
 export function LeadDetailsPage() {
   const { id } = useParams<{ id: string }>();
 
-  const { data: lead, isLoading, isError, error } = useLeadQuery(id ?? "");
+  const {
+    data: lead,
+    isLoading,
+    isError,
+    error,
+  } = useLeadQuery(id ?? "");
 
   if (!id) {
     return (
-      <div className="mx-auto max-w-[1400px]">
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
+      <div className="mx-auto w-full max-w-[1180px]">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
           Invalid lead ID.
         </div>
       </div>
@@ -25,11 +30,13 @@ export function LeadDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center">
+      <div className="flex min-h-[520px] items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#dedede] border-t-[#222222]" />
 
-          <p className="mt-4 text-sm text-slate-500">Loading lead details...</p>
+          <p className="mt-4 text-sm text-[#777777]">
+            Loading lead details...
+          </p>
         </div>
       </div>
     );
@@ -37,7 +44,7 @@ export function LeadDetailsPage() {
 
   if (isError || !lead) {
     return (
-      <div className="mx-auto max-w-[1400px] space-y-5">
+      <div className="mx-auto w-full max-w-[1180px] space-y-5">
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
           <p className="font-medium">Failed to load the lead.</p>
 
@@ -50,7 +57,7 @@ export function LeadDetailsPage() {
 
         <Link
           to="/leads"
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          className="inline-flex items-center gap-2 rounded-xl border border-[#dddddd] bg-white px-4 py-2 text-sm font-medium text-[#555555] transition hover:bg-[#f7f7f7]"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to leads
@@ -60,11 +67,12 @@ export function LeadDetailsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-7">
+    <div className="mx-auto w-full max-w-[1180px] space-y-6">
       <LeadHeader lead={lead} />
 
       <LeadPipeline lead={lead} />
-      <div className="grid items-stretch gap-6 xl:grid-cols-3">
+
+      <div className="grid items-stretch gap-4 lg:grid-cols-3">
         <LeadActivityCard lead={lead} />
 
         <LeadDetailsCard lead={lead} />

@@ -10,12 +10,15 @@ export interface Lead {
   phone: string;
   source: LeadSource;
   stage: LeadStage;
-  budget: number | null;
+  budget: number | string | null;
+  ai_score?: number | string | null;
+
   agent: {
     id: number;
     name: string;
     email: string;
   } | null;
+
   created_at: string;
   updated_at: string;
 }

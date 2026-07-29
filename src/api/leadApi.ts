@@ -1,7 +1,15 @@
-import { apiGet, apiPatch, apiPost, apiPut } from "@/lib/fetcher";
+import {
+  apiGet,
+  apiPatch,
+  apiPost,
+  apiPut,
+} from "@/lib/fetcher";
 
 import type { LeadPayload } from "@/schemas/lead-schema";
-import type { LeadResponse, LeadsResponse } from "@/types/lead";
+import type {
+  LeadResponse,
+  LeadsResponse,
+} from "@/types/lead";
 
 export type UpdateLeadPayload = LeadPayload;
 
@@ -13,21 +21,30 @@ export type ChangeLeadStagePayload = {
   stage: string;
 };
 
+type GetLeadsParams = {
+  page?: number;
+  search?: string;
+  stage?: string;
+  source?: string;
+  agentId?: string;
+};
+
 const PER_PAGE = 100;
 
-export function getLeads(
+export function getLeads({
   page = 1,
   search = "",
   stage = "",
   source = "",
-) {
+  agentId = "",
+}: GetLeadsParams = {}) {
   const params = new URLSearchParams();
 
-  params.set("page", page.toString());
-  params.set("per_page", PER_PAGE.toString());
+  params.set("page", String(page));
+  params.set("per_page", String(PER_PAGE));
 
-  if (search) {
-    params.set("search", search);
+  if (search.trim()) {
+    params.set("q", search.trim());
   }
 
   if (stage) {
@@ -38,7 +55,13 @@ export function getLeads(
     params.set("source", source);
   }
 
-  return apiGet<LeadsResponse>(`/leads?${params.toString()}`);
+  if (agentId) {
+    params.set("agent_id", agentId);
+  }
+
+  return apiGet<LeadsResponse>(
+    `/leads?${params.toString()}`,
+  );
 }
 
 export function getLead(id: number | string) {
@@ -46,7 +69,10 @@ export function getLead(id: number | string) {
 }
 
 export function createLead(data: LeadPayload) {
-  return apiPost<LeadResponse, LeadPayload>("/leads", data);
+  return apiPost<LeadResponse, LeadPayload>(
+    "/leads",
+    data,
+  );
 }
 
 export function updateLead(
@@ -73,8 +99,8 @@ export function changeLeadStage(
   id: number,
   data: ChangeLeadStagePayload,
 ) {
-  return apiPatch<LeadResponse, ChangeLeadStagePayload>(
-    `/leads/${id}/stage`,
-    data,
-  );
+  return apiPatch<
+    LeadResponse,
+    ChangeLeadStagePayload
+  >(`/leads/${id}/stage`, data);
 }

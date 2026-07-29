@@ -1,4 +1,4 @@
-import { MoreHorizontal } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -6,25 +6,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  formatCurrency,
-  formatDealDate,
-} from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import type { Deal } from "@/types/deal";
 
-interface DealCardProps {
+type DealCardProps = {
   deal: Deal;
   onView: (deal: Deal) => void;
   onEdit: (deal: Deal) => void;
-}
+};
 
-const stageColors: Record<string, string> = {
-  new: "bg-violet-500",
-  contacted: "bg-sky-500",
-  qualified: "bg-emerald-500",
-  negotiation: "bg-amber-500",
-  won: "bg-green-500",
-  lost: "bg-slate-500",
+const stageStripeClassNames: Record<string, string> = {
+  new: "bg-[#bab7f5]",
+  qualified: "bg-[#86c5aa]",
+  contacted: "bg-[#79b6ff]",
+  negotiation: "bg-[#b4b4b4]",
+  won: "bg-[#f4d584]",
+  lost: "bg-[#e59999]",
+};
+
+const stageValueClassNames: Record<string, string> = {
+  new: "text-[#746fe3]",
+  qualified: "text-[#368267]",
+  contacted: "text-[#438ee8]",
+  negotiation: "text-[#666666]",
+  won: "text-[#d29222]",
+  lost: "text-[#b04b4b]",
 };
 
 export function DealCard({
@@ -32,94 +38,77 @@ export function DealCard({
   onView,
   onEdit,
 }: DealCardProps) {
-  const stripe = stageColors[deal.stage] ?? "bg-slate-400";
+  const stripeClassName =
+    stageStripeClassNames[deal.stage] ?? "bg-[#bbbbbb]";
 
-  const initials =
-    deal.agent?.name
-      ?.split(" ")
-      .map((word) => word[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ?? "NA";
+  const valueClassName =
+    stageValueClassNames[deal.stage] ?? "text-[#555555]";
 
   return (
-    <div
+    <article
       role="button"
       tabIndex={0}
       onClick={() => onView(deal)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
           onView(deal);
         }
       }}
-      className="group relative cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-300"
+      className="group relative min-h-[100px] cursor-pointer overflow-hidden rounded-xl border border-[#e6e6e6] bg-white py-3 pl-5 pr-3 shadow-[0_2px_7px_rgba(0,0,0,0.045)] transition hover:-translate-y-0.5 hover:shadow-[0_5px_14px_rgba(0,0,0,0.07)] focus:outline-none focus:ring-2 focus:ring-[#dedede]"
     >
-      {/* Left Accent */}
       <div
-        className={`absolute left-0 top-0 h-full w-1.5 ${stripe}`}
+        className={`absolute inset-y-0 left-0 w-3 ${stripeClassName}`}
       />
 
-      <div className="p-4 pl-5">
-        {/* Header */}
-        <div className="mb-3 flex items-start justify-between">
-          <div className="min-w-0">
-            <h3 className="truncate text-[15px] font-semibold text-slate-900">
-              {deal.lead?.name ?? "Unknown Lead"}
-            </h3>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="truncate text-[11px] font-semibold text-[#252525]">
+            {deal.lead?.name ?? "Unknown Lead"}
+          </h3>
 
-            <p className="truncate text-xs text-slate-500">
-              {deal.unit?.code ?? "No Unit"}
-            </p>
-          </div>
+          <p className="mt-2 truncate text-[9px] text-[#555555]">
+            {deal.unit?.code ?? "No Unit"}
+          </p>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              onClick={(e) => e.stopPropagation()}
-              className="rounded-md p-1 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-700 md:opacity-0 md:group-hover:opacity-100"
-            >
-              <MoreHorizontal size={16} />
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent
-              align="end"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DropdownMenuItem onClick={() => onView(deal)}>
-                View Details
-              </DropdownMenuItem>
-
-              <DropdownMenuItem onClick={() => onEdit(deal)}>
-                Edit
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Value */}
-        <div className="mb-4">
-          <p className="text-xl font-bold tracking-tight text-slate-900">
+          <p
+            className={`mt-2 text-[10px] font-medium ${valueClassName}`}
+          >
             {formatCurrency(Number(deal.value ?? 0))}
           </p>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-          <span className="text-xs font-medium text-slate-500">
-            {formatDealDate(deal.expected_close)}
-          </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={`Actions for ${deal.lead?.name ?? "deal"}`}
+            onClick={(event) => event.stopPropagation()}
+            className="flex h-6 w-6 items-center justify-center rounded-lg text-[#555555] transition hover:bg-[#f1f1f1]"
+          >
+            <MoreVertical className="h-3.5 w-3.5" />
+          </DropdownMenuTrigger>
 
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[10px] font-semibold text-white">
-              {initials}
-            </div>
+          <DropdownMenuContent
+            align="end"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <DropdownMenuItem onClick={() => onView(deal)}>
+              View Details
+            </DropdownMenuItem>
 
-            <span className="max-w-[90px] truncate text-xs font-medium text-slate-700">
-              {deal.agent?.name ?? "Unassigned"}
-            </span>
-          </div>
-        </div>
+            <DropdownMenuItem onClick={() => onEdit(deal)}>
+              Edit
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-    </div>
+
+      {deal.agent && (
+        <div className="mt-2 flex justify-end">
+          <span className="max-w-[100px] truncate rounded-full bg-[#e8f8f1] px-3 py-1 text-[8px] font-medium text-[#4c7666]">
+            {deal.agent.name}
+          </span>
+        </div>
+      )}
+    </article>
   );
 }

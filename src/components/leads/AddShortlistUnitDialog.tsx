@@ -41,15 +41,17 @@ export function AddShortlistUnitDialog({
     () => new Set(shortlistedUnits.map((unit) => unit.id)),
     [shortlistedUnits],
   );
-const availableUnits = useMemo(
-  () =>
-    (unitsQuery.data?.data ?? []).filter(
-      (unit) =>
-        unit.status === "available" &&
-        !shortlistedIds.has(unit.id),
-    ),
-  [shortlistedIds, unitsQuery.data?.data],
-);
+
+  const availableUnits = useMemo(
+    () =>
+      (unitsQuery.data?.data ?? []).filter(
+        (unit) =>
+          unit.status === "available" &&
+          !shortlistedIds.has(unit.id),
+      ),
+    [shortlistedIds, unitsQuery.data?.data],
+  );
+
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
 
@@ -74,7 +76,7 @@ const availableUnits = useMemo(
 
       handleOpenChange(false);
     } catch {
-      // The mutation error is rendered inside the dialog.
+      // The mutation error is rendered below.
     }
   };
 
@@ -90,10 +92,10 @@ const availableUnits = useMemo(
           <Button
             type="button"
             variant="outline"
-            className="rounded-xl"
+            className="h-9 rounded-xl border-[#e2e2e2] bg-white px-4 text-[10px] font-medium text-[#666666] shadow-[0_2px_6px_rgba(0,0,0,0.04)]"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Unit
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Add Unit To Shortlist
           </Button>
         }
       />
