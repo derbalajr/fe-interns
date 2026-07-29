@@ -15,5 +15,5 @@ export function useUnitsQuery({
     queryKey: [...unitsQueryKey, page],
     queryFn: () => getUnits(page),
     placeholderData: (previousData) => previousData,
-  });
+ });
 }

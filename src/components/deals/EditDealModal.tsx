@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 import { DealForm } from "@/components/deals/DealForm";
 import {
   Dialog,
@@ -24,13 +22,6 @@ export function EditDealModal({
 }: EditDealModalProps) {
   const updateDeal = useUpdateDealMutation();
 
-  const [currentDeal, setCurrentDeal] =
-    useState<Deal | null>(deal);
-
-  useEffect(() => {
-    setCurrentDeal(deal);
-  }, [deal]);
-
   return (
     <Dialog
       open={open}
@@ -45,13 +36,13 @@ export function EditDealModal({
           </DialogDescription>
         </DialogHeader>
 
-        {currentDeal && (
+        {deal && (
           <DealForm
-            deal={currentDeal}
+            deal={deal}
             isPending={updateDeal.isPending}
             onSubmit={async (data) => {
               await updateDeal.mutateAsync({
-                id: currentDeal.id,
+                id: deal.id,
                 data,
               });
 

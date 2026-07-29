@@ -41,15 +41,15 @@ export function AddShortlistUnitDialog({
     () => new Set(shortlistedUnits.map((unit) => unit.id)),
     [shortlistedUnits],
   );
-
-  const availableUnits = useMemo(
-    () =>
-      (unitsQuery.data?.data ?? []).filter(
-        (unit) => unit.status === "available" && !shortlistedIds.has(unit.id),
-      ),
-    [shortlistedIds, unitsQuery.data],
-  );
-
+const availableUnits = useMemo(
+  () =>
+    (unitsQuery.data?.data ?? []).filter(
+      (unit) =>
+        unit.status === "available" &&
+        !shortlistedIds.has(unit.id),
+    ),
+  [shortlistedIds, unitsQuery.data?.data],
+);
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
 
@@ -79,13 +79,19 @@ export function AddShortlistUnitDialog({
   };
 
   const errorMessage =
-    addMutation.error instanceof Error ? addMutation.error.message : null;
+    addMutation.error instanceof Error
+      ? addMutation.error.message
+      : null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
-          <Button type="button" variant="outline" className="rounded-xl">
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-xl"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Add Unit
           </Button>
@@ -103,7 +109,9 @@ export function AddShortlistUnitDialog({
 
         <div className="space-y-5">
           {unitsQuery.isLoading ? (
-            <p className="text-sm text-slate-500">Loading units...</p>
+            <p className="text-sm text-slate-500">
+              Loading units...
+            </p>
           ) : unitsQuery.isError ? (
             <p
               role="alert"
@@ -119,7 +127,10 @@ export function AddShortlistUnitDialog({
             </p>
           ) : (
             <div className="space-y-2">
-              <label htmlFor="shortlist-unit" className="text-sm font-medium">
+              <label
+                htmlFor="shortlist-unit"
+                className="text-sm font-medium"
+              >
                 Unit
               </label>
 
@@ -138,8 +149,12 @@ export function AddShortlistUnitDialog({
 
                 <SelectContent>
                   {availableUnits.map((unit) => (
-                    <SelectItem key={unit.id} value={String(unit.id)}>
-                      {unit.code} · {unit.type} · {getProjectName(unit)}
+                    <SelectItem
+                      key={unit.id}
+                      value={String(unit.id)}
+                    >
+                      {unit.code} · {unit.type} ·{" "}
+                      {getProjectName(unit)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -169,11 +184,15 @@ export function AddShortlistUnitDialog({
             <Button
               type="button"
               disabled={
-                !selectedUnitId || addMutation.isPending || unitsQuery.isLoading
+                !selectedUnitId ||
+                addMutation.isPending ||
+                unitsQuery.isLoading
               }
               onClick={handleSubmit}
             >
-              {addMutation.isPending ? "Adding..." : "Add to Shortlist"}
+              {addMutation.isPending
+                ? "Adding..."
+                : "Add to Shortlist"}
             </Button>
           </div>
         </div>

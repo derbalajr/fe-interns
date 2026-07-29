@@ -24,31 +24,32 @@ export default function DealsPage() {
   const [selectedDeal, setSelectedDeal] =
     useState<Deal | null>(null);
 
-  const [detailsOpen, setDetailsOpen] =
-    useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
-  const [editOpen, setEditOpen] =
-    useState(false);
+  const dealsByStage = useMemo<Record<Stage, Deal[]>>(() => {
+    const deals = data?.data ?? [];
 
-  const deals: Deal[] = data?.data ?? [];
-
-  const dealsByStage = useMemo<Record<Stage, Deal[]>>(
-    () => ({
+    return {
       new: deals.filter((deal) => deal.stage === "new"),
+
       contacted: deals.filter(
         (deal) => deal.stage === "contacted",
       ),
+
       qualified: deals.filter(
         (deal) => deal.stage === "qualified",
       ),
+
       negotiation: deals.filter(
         (deal) => deal.stage === "negotiation",
       ),
+
       won: deals.filter((deal) => deal.stage === "won"),
+
       lost: deals.filter((deal) => deal.stage === "lost"),
-    }),
-    [deals],
-  );
+    };
+  }, [data?.data]);
 
   const visibleStages = STAGES.filter(
     (stage) =>
@@ -76,7 +77,6 @@ export default function DealsPage() {
   return (
     <>
       <div className="space-y-4">
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             Deals
@@ -87,14 +87,11 @@ export default function DealsPage() {
           </p>
         </div>
 
-        {/* Board */}
         <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {/* Toolbar */}
           <div className="border-b border-slate-200 px-5 py-4">
             <DealsToolbar />
           </div>
 
-          {/* Pipeline */}
           <div className="min-h-[650px] w-full overflow-x-auto overflow-y-hidden">
             <div className="flex h-full w-max items-stretch gap-4 p-4">
               {visibleStages.map((stage) => (
