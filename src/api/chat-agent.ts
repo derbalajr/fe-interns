@@ -18,10 +18,14 @@ const DEFAULT_CHAT_API_BASE = "http://10.10.67.51:8000";
 const API_BASE = (
   import.meta.env.VITE_CHAT_API_BASE || DEFAULT_CHAT_API_BASE
 ).replace(/\/$/, "");
-const API_TOKEN = import.meta.env.VITE_CHAT_API_TOKEN;
 
-// The bearer token is optional: local deployments run with
-// ALLOW_UNAUTHENTICATED=true, so we only send Authorization when it's set.
+// Static default so production works with no env var. Override with
+// VITE_CHAT_API_TOKEN if the deployment needs a different key.
+const DEFAULT_CHAT_API_TOKEN = "sk_dhI1nn8krJrTwNjFzGeVMnlkbPq17tMa";
+
+const API_TOKEN = import.meta.env.VITE_CHAT_API_TOKEN || DEFAULT_CHAT_API_TOKEN;
+
+// Send the bearer token when we have one (we always do now, via the default).
 function authHeaders(): Record<string, string> {
   return API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {};
 }
