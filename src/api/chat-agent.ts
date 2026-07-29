@@ -11,15 +11,14 @@
 
 import type { ChatStreamEvent, FloorMap } from "@/types/chat-agent";
 
-const API_BASE = import.meta.env.VITE_CHAT_API_BASE?.replace(/\/$/, "");
-const API_TOKEN = import.meta.env.VITE_CHAT_API_TOKEN;
+// Static default so production works with no env var. Override with
+// VITE_CHAT_API_BASE only for local dev or a different deployment.
+const DEFAULT_CHAT_API_BASE = "http://10.10.67.51:8000";
 
-function requireBase(): string {
-  if (!API_BASE) {
-    throw new Error("Chat agent is not configured. Set VITE_CHAT_API_BASE.");
-  }
-  return API_BASE;
-}
+const API_BASE = (
+  import.meta.env.VITE_CHAT_API_BASE || DEFAULT_CHAT_API_BASE
+).replace(/\/$/, "");
+const API_TOKEN = import.meta.env.VITE_CHAT_API_TOKEN;
 
 // The bearer token is optional: local deployments run with
 // ALLOW_UNAUTHENTICATED=true, so we only send Authorization when it's set.
@@ -44,7 +43,7 @@ export async function streamChat(
   prompt: string,
   { onToken, onFloorMap, signal }: StreamHandlers,
 ): Promise<StreamResult> {
-  const base = requireBase();
+  const base = API_BASE;
 
   const res = await fetch(`${base}/chat/stream`, {
     method: "POST",
@@ -109,7 +108,7 @@ export async function streamChat(
 
 /** Clear the conversation cookies so the next message starts a new thread. */
 export async function startNewChat(): Promise<void> {
-  const base = requireBase();
+  const base = API_BASE;
 
   const res = await fetch(`${base}/new-chat`, {
     method: "POST",
