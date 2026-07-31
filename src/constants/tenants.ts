@@ -18,13 +18,12 @@ export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
     currency: "EGP",
     primaryColor: "bg-slate-900",
   },
-
   marq: {
     id: "marq",
     displayName: "MarQ",
     shortName: "MarQ CRM",
     logoText: "MQ",
-    currency: "AED",
+    currency: "EGP",
     primaryColor: "bg-slate-900",
   },
 };

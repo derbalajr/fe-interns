@@ -30,10 +30,10 @@ export function CustomersPage() {
       </Can>
       </div>
       <div className="space-y-8">
-      {/* Existing page content */}
+        {/* Existing page content */}
 
-      {import.meta.env.DEV && <CustomerFormDemo />}
-    </div>
+        {import.meta.env.DEV && <CustomerFormDemo />}
+      </div>
     </section>
   );
 }

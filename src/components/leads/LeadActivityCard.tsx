@@ -11,47 +11,69 @@ type ActivityItem = {
   description: string;
 };
 
-export function LeadActivityCard({ lead }: LeadActivityCardProps) {
+function formatValue(value: string): string {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export function LeadActivityCard({
+  lead,
+}: LeadActivityCardProps) {
+  const createdDate = new Date(
+    lead.created_at,
+  ).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
   const activities: ActivityItem[] = [
     {
-      title: `Current stage: ${lead.stage}`,
-      description: "Latest pipeline status",
+      title: `Stage Moved To ${formatValue(lead.stage)}`,
+      description: lead.agent
+        ? `${lead.agent.name} · Latest Status`
+        : "Latest Pipeline Status",
     },
     {
       title: lead.agent
-        ? `Lead assigned to ${lead.agent.name}`
-        : "Lead has not been assigned",
-      description: lead.agent ? "Assigned agent" : "Unassigned",
+        ? `Lead Assigned To ${lead.agent.name}`
+        : "Lead Is Currently Unassigned",
+      description: lead.agent
+        ? "Assigned Agent"
+        : "No Agent Assigned",
     },
     {
-      title: `Lead created from ${lead.source}`,
-      description: new Date(lead.created_at).toLocaleDateString(),
+      title: `Lead Created From ${formatValue(lead.source)}`,
+      description: createdDate,
     },
   ];
 
   return (
     <LeadPanel title="Activity" className="h-full">
-      <ol className="space-y-0">
+      <ol>
         {activities.map((activity, index) => {
-          const isLast = index === activities.length - 1;
+          const isLast =
+            index === activities.length - 1;
 
           return (
             <li
               key={`${activity.title}-${index}`}
-              className="relative flex gap-4 pb-8 last:pb-0"
+              className="relative flex gap-4 pb-7 last:pb-0"
             >
               {!isLast && (
-                <div className="absolute left-[9px] top-5 h-full w-px bg-slate-400" />
+                <div className="absolute left-[8px] top-4 h-full w-px bg-[#555555]" />
               )}
 
-              <div className="relative z-10 mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-slate-900 bg-white" />
+              <div className="relative z-10 mt-0.5 h-[18px] w-[18px] shrink-0 rounded-full border-[1.5px] border-[#222222] bg-white" />
 
-              <div>
-                <p className="text-sm font-medium text-slate-900">
+              <div className="min-w-0">
+                <p className="text-xs font-medium leading-5 text-[#333333]">
                   {activity.title}
                 </p>
 
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-0.5 text-[10px] text-[#858585]">
                   {activity.description}
                 </p>
               </div>

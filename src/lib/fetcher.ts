@@ -134,7 +134,17 @@ export function apiPut<TResponse, TBody = unknown>(
     body,
   });
 }
-
+export function apiPatch<TResponse, TBody = unknown>(
+  path: string,
+  body: TBody,
+  options?: Omit<FetcherOptions, "method" | "body">,
+): Promise<TResponse> {
+  return fetcher<TResponse>(path, {
+    ...options,
+    method: "PATCH",
+    body,
+  });
+}
 export function apiDelete<T>(
   path: string,
   options?: Omit<FetcherOptions, "method" | "body">,

@@ -1,103 +1,153 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
-
-import { getCurrentTenant } from "@/lib/tenant";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
+
 import type { Lead } from "@/types/lead";
 
-const { currency: currencyCode } = getCurrentTenant();
+function formatStageLabel(stage: Lead["stage"]): string {
+  if (stage === "unqualified") {
+    return "Out";
+  }
 
-const currency = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: currencyCode,
-  maximumFractionDigits: 0,
-});
+  return stage.charAt(0).toUpperCase() + stage.slice(1);
+}
 
-function getStageVariant(stage: Lead["stage"]) {
+function getStageClassName(stage: Lead["stage"]): string {
   switch (stage) {
-    case "New":
-      return "secondary";
+    case "qualified":
+      return "bg-[#e7f8f1] text-[#34866b]";
 
-    case "Qualified":
-      return "default";
+    case "contacted":
+      return "bg-[#f0f0f0] text-[#686868]";
 
-    case "Contacted":
-      return "outline";
+    case "unqualified":
+      return "bg-[#fde9e9] text-[#a44848]";
 
-    case "Lost":
-      return "destructive";
+    case "new":
+      return "bg-[#fff4dc] text-[#8a743d]";
 
     default:
-      return "secondary";
+      return "bg-[#f0f0f0] text-[#686868]";
   }
+}
+
+function formatSource(source: Lead["source"]): string {
+  return source
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function getAiScore(lead: Lead): number | null {
+  const rawScore = lead.ai_score;
+
+  if (rawScore === null || rawScore === undefined || rawScore === "") {
+    return null;
+  }
+
+  const numericScore = Number(rawScore);
+
+  return Number.isFinite(numericScore) ? numericScore : null;
 }
 
 export function getLeadColumns(): ColumnDef<Lead>[] {
   return [
     {
       accessorKey: "name",
-      header: "Lead",
+      header: "Leads",
+      size: 280,
       cell: ({ row }) => {
         const lead = row.original;
+        const initial = lead.name.trim().charAt(0).toUpperCase() || "?";
 
         return (
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 font-semibold text-white">
-              {lead.name.charAt(0)}
+          <Link
+            to={`/leads/${lead.id}`}
+            className="group flex min-w-0 items-center gap-3"
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e8ded1] text-xs font-semibold text-[#5e5144]">
+              {initial}
             </div>
 
-            <div>
-              <Link
-                to={`/leads/${lead.id}`}
-                className="font-medium text-slate-900 hover:underline"
-              >
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-semibold text-[#262626] group-hover:underline">
                 {lead.name}
-              </Link>
-              <p className="text-sm text-muted-foreground">{lead.email}</p>
+              </p>
+
+              <p className="mt-0.5 truncate text-[10px] text-[#797979]">
+                {lead.phone || lead.email}
+              </p>
             </div>
-          </div>
+          </Link>
         );
       },
     },
     {
       accessorKey: "stage",
       header: "Stage",
-      cell: ({ row }) => (
-        <Badge variant={getStageVariant(row.original.stage)}>
-          {row.original.stage}
-        </Badge>
-      ),
+      size: 150,
+      cell: ({ row }) => {
+        const stage = row.original.stage;
+
+        return (
+          <span
+            className={`inline-flex min-w-[76px] items-center justify-center rounded-full px-3 py-1 text-[11px] font-medium ${getStageClassName(
+              stage,
+            )}`}
+          >
+            {formatStageLabel(stage)}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "source",
       header: "Source",
+      size: 175,
+      cell: ({ row }) => (
+        <span className="text-[12px] text-[#555555]">
+          {formatSource(row.original.source)}
+        </span>
+      ),
     },
     {
-      accessorKey: "agent",
-      header: "Agent",
-      cell: ({ row }) => row.original.agent?.name ?? "-",
+      id: "assignedAgent",
+      header: "Assigned Agent",
+      size: 190,
+      cell: ({ row }) => (
+        <span className="text-[12px] text-[#555555]">
+          {row.original.agent?.name ?? "—"}
+        </span>
+      ),
     },
     {
-      accessorKey: "budget",
-      header: "Budget",
+      id: "aiScore",
+      header: "AI Score",
+      size: 110,
       cell: ({ row }) => {
-        const budget = row.original.budget;
+        const score = getAiScore(row.original);
 
-        return budget == null ? "—" : currency.format(budget);
+        return (
+          <span className="text-[12px] font-medium text-[#555555]">
+            {score ?? "—"}
+          </span>
+        );
       },
     },
     {
       id: "actions",
       header: "",
+      size: 60,
       cell: ({ row }) => (
-        <Link
-          to={`/leads/${row.original.id}`}
-          aria-label={`View ${row.original.name}`}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Link>
+        <div className="flex justify-end">
+          <Link
+            to={`/leads/${row.original.id}`}
+            aria-label={`View ${row.original.name}`}
+            className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#a9a9a9] text-[#686868] transition hover:border-[#303030] hover:bg-[#303030] hover:text-white"
+          >
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
       ),
     },
   ];

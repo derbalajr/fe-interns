@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getLead } from "@/api/leadApi";
 
 export function leadQueryKey(id: number | string) {
-  return ["leads", "detail", id] as const;
+  return ["leads", "detail", String(id)] as const;
 }
 
 export function useLeadQuery(id: number | string) {

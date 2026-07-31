@@ -1,13 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { updateLead } from "@/api/leadApi";
+import { updateLead, type UpdateLeadPayload } from "@/api/leadApi";
 import { leadQueryKey } from "@/hooks/use-lead-query";
 import { leadsQueryKey } from "@/hooks/use-leads-query";
-import type { LeadPayload } from "@/schemas/lead-schema";
 
 type UpdateLeadInput = {
   id: number;
-  data: LeadPayload;
+  data: UpdateLeadPayload;
 };
 
 export function useUpdateLeadMutation() {

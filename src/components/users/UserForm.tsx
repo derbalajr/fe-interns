@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateUserMutation } from "@/hooks/use-create-user-mutation";
 import { useUpdateUserMutation } from "@/hooks/use-update-user-mutation";
-import {
-  userSchema,
-  type UserFormValues,
-} from "@/schemas/user-schema";
+import { userSchema, type UserFormValues } from "@/schemas/user-schema";
 import type { User } from "@/types/user";
 
 type UserFormProps = {
@@ -17,10 +14,7 @@ type UserFormProps = {
   onSuccess?: () => void;
 };
 
-export function UserForm({
-  user,
-  onSuccess,
-}: UserFormProps) {
+export function UserForm({ user, onSuccess }: UserFormProps) {
   const createMutation = useCreateUserMutation();
   const updateMutation = useUpdateUserMutation();
 
@@ -65,41 +59,24 @@ export function UserForm({
     onSuccess?.();
   });
 
-  const isPending =
-    createMutation.isPending || updateMutation.isPending;
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="space-y-5"
-      noValidate
-    >
+    <form onSubmit={onSubmit} className="space-y-5" noValidate>
       <div>
-        <label
-          htmlFor="name"
-          className="mb-2 block text-sm font-medium"
-        >
+        <label htmlFor="name" className="mb-2 block text-sm font-medium">
           Name
         </label>
 
-        <Input
-          id="name"
-          {...register("name")}
-          placeholder="John Doe"
-        />
+        <Input id="name" {...register("name")} placeholder="John Doe" />
 
         {errors.name && (
-          <p className="mt-1 text-sm text-red-500">
-            {errors.name.message}
-          </p>
+          <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
         )}
       </div>
 
       <div>
-        <label
-          htmlFor="email"
-          className="mb-2 block text-sm font-medium"
-        >
+        <label htmlFor="email" className="mb-2 block text-sm font-medium">
           Email
         </label>
 
@@ -111,17 +88,12 @@ export function UserForm({
         />
 
         {errors.email && (
-          <p className="mt-1 text-sm text-red-500">
-            {errors.email.message}
-          </p>
+          <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
         )}
       </div>
 
       <div>
-        <label
-          htmlFor="role"
-          className="mb-2 block text-sm font-medium"
-        >
+        <label htmlFor="role" className="mb-2 block text-sm font-medium">
           Role
         </label>
 
@@ -136,10 +108,7 @@ export function UserForm({
       </div>
 
       <div>
-        <label
-          htmlFor="status"
-          className="mb-2 block text-sm font-medium"
-        >
+        <label htmlFor="status" className="mb-2 block text-sm font-medium">
           Status
         </label>
 
@@ -154,10 +123,7 @@ export function UserForm({
       </div>
 
       <div className="flex justify-end gap-3 pt-2">
-        <Button
-          type="submit"
-          disabled={isPending}
-        >
+        <Button type="submit" disabled={isPending}>
           {user ? "Save Changes" : "Create User"}
         </Button>
       </div>

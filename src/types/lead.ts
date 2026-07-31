@@ -1,16 +1,24 @@
+import type {
+  LeadSource,
+  LeadStage,
+} from "@/schemas/lead-schema";
+
 export interface Lead {
   id: number;
   name: string;
   email: string;
   phone: string;
-  source: string;
-  stage: string;
-  budget: number | null;
+  source: LeadSource;
+  stage: LeadStage;
+  budget: number | string | null;
+  ai_score?: number | string | null;
+
   agent: {
     id: number;
     name: string;
     email: string;
   } | null;
+
   created_at: string;
   updated_at: string;
 }
@@ -20,9 +28,11 @@ export interface PaginationLink {
   label: string;
   active: boolean;
 }
+
 export interface LeadResponse {
   data: Lead;
 }
+
 export interface PaginationMeta {
   current_page: number;
   from: number | null;

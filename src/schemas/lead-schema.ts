@@ -12,10 +12,12 @@ export const LEAD_STAGE_VALUES = [
   "new",
   "contacted",
   "qualified",
-  "negotiation",
-  "won",
-  "lost",
+  "unqualified",
 ] as const;
+
+export type LeadSource = (typeof LEAD_SOURCE_VALUES)[number];
+
+export type LeadStage = (typeof LEAD_STAGE_VALUES)[number];
 
 export const leadSchema = z.object({
   name: z
@@ -33,7 +35,10 @@ export const leadSchema = z.object({
       "Enter a valid email",
     ),
 
-  phone: z.string().trim().max(50, "Phone must not exceed 50 characters"),
+  phone: z
+    .string()
+    .trim()
+    .max(50, "Phone must not exceed 50 characters"),
 
   source: z.enum(LEAD_SOURCE_VALUES, {
     message: "Select a source",
@@ -48,7 +53,8 @@ export const leadSchema = z.object({
     .trim()
     .refine(
       (value) =>
-        value === "" || (!Number.isNaN(Number(value)) && Number(value) >= 0),
+        value === "" ||
+        (!Number.isNaN(Number(value)) && Number(value) >= 0),
       "Budget must be zero or greater",
     ),
 });

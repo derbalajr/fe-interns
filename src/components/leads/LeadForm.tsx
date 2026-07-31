@@ -7,6 +7,7 @@ import { FormTextField } from "@/components/form/FormTextField";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/fetcher";
 import {
+  LEAD_STAGE_VALUES,
   leadSchema,
   type LeadFormValues,
   type LeadPayload,
@@ -36,32 +37,12 @@ const sourceOptions = [
   },
 ];
 
-const stageOptions = [
-  {
-    label: "New",
-    value: "new",
-  },
-  {
-    label: "Contacted",
-    value: "contacted",
-  },
-  {
-    label: "Qualified",
-    value: "qualified",
-  },
-  {
-    label: "Negotiation",
-    value: "negotiation",
-  },
-  {
-    label: "Won",
-    value: "won",
-  },
-  {
-    label: "Lost",
-    value: "lost",
-  },
-];
+// Derived from the schema so the form's options can never drift from the
+// stages the schema actually accepts.
+const stageOptions = LEAD_STAGE_VALUES.map((value) => ({
+  value,
+  label: value.charAt(0).toUpperCase() + value.slice(1),
+}));
 
 type LeadFormProps = {
   lead?: Lead;

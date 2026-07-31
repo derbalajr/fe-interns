@@ -4,12 +4,20 @@ import {
   type TenantId,
 } from "../constants/tenants";
 
-export function getCurrentTenant(): TenantConfig {
-  const tenantId = import.meta.env.VITE_TENANT_ID as TenantId;
+function normalizeTenantId(tenantId?: string | null): TenantId | null {
+  const normalizedTenantId = tenantId?.trim().toLowerCase();
 
-  if (!tenantId || !(tenantId in TENANT_CONFIGS)) {
-    throw new Error(`Invalid VITE_TENANT_ID: ${tenantId}`);
+  if (!normalizedTenantId || !(normalizedTenantId in TENANT_CONFIGS)) {
+    return null;
   }
 
-  return TENANT_CONFIGS[tenantId];
+  return normalizedTenantId as TenantId;
+}
+
+export function getCurrentTenant(
+  tenantId?: string | null,
+): TenantConfig | null {
+  const resolvedTenantId = normalizeTenantId(tenantId);
+
+  return resolvedTenantId ? TENANT_CONFIGS[resolvedTenantId] : null;
 }

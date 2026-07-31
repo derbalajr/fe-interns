@@ -1,24 +1,39 @@
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+
 import { CreateLeadDialog } from "@/components/leads/CreateLeadDialog";
 import { Input } from "@/components/ui/input";
+
+export type LeadAgentOption = {
+  id: number;
+  name: string;
+};
 
 interface LeadToolbarProps {
   search: string;
   stage: string;
   source: string;
+  agentId: string;
+  agents: LeadAgentOption[];
   onSearchChange: (value: string) => void;
   onStageChange: (value: string) => void;
   onSourceChange: (value: string) => void;
+  onAgentChange: (value: string) => void;
 }
+
+const selectClassName =
+  "h-11 min-w-[120px] rounded-xl border border-[#ededed] bg-[#fafafa] px-4 text-sm text-[#666666] shadow-[0_2px_8px_rgba(0,0,0,0.035)] outline-none transition focus:border-[#d6d6d6]";
 
 export function LeadToolbar({
   search,
   stage,
   source,
+  agentId,
+  agents,
   onSearchChange,
   onStageChange,
   onSourceChange,
+  onAgentChange,
 }: LeadToolbarProps) {
   const [searchValue, setSearchValue] = useState(search);
 
@@ -31,51 +46,69 @@ export function LeadToolbar({
   }, [searchValue, onSearchChange]);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-full md:w-72">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
+    <div className="flex flex-wrap items-center gap-2.5">
+      <div className="relative w-full sm:w-[210px]">
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9a9a]"
+        />
 
-          <Input
-            placeholder="Search Leads..."
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            className="h-11 rounded-xl border-slate-200 bg-white pl-10 shadow-none"
-          />
-        </div>
-
-        <select
-          value={stage}
-          onChange={(event) => onStageChange(event.target.value)}
-          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-600 outline-none transition focus:border-slate-400"
-        >
-          <option value="">Stage: All</option>
-          <option value="New">New</option>
-          <option value="Qualified">Qualified</option>
-          <option value="Contacted">Contacted</option>
-          <option value="Lost">Lost</option>
-        </select>
-
-        <select
-          value={source}
-          onChange={(event) => onSourceChange(event.target.value)}
-          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-600 outline-none transition focus:border-slate-400"
-        >
-          <option value="">Source: All</option>
-          <option value="Website">Website</option>
-          <option value="Referral">Referral</option>
-          <option value="LinkedIn">LinkedIn</option>
-          <option value="Facebook">Facebook</option>
-          <option value="Instagram">Instagram</option>
-        </select>
-
-        <div className="flex-1" />
-
-        <CreateLeadDialog />
+        <Input
+          type="search"
+          aria-label="Search leads"
+          placeholder="Search Leads..."
+          value={searchValue}
+          onChange={(event) => setSearchValue(event.target.value)}
+          className="h-11 rounded-xl border-[#ededed] bg-[#fafafa] pl-10 text-sm text-[#333333] shadow-[0_2px_8px_rgba(0,0,0,0.035)] placeholder:text-[#9a9a9a] focus-visible:border-[#d6d6d6] focus-visible:ring-0"
+        />
       </div>
+
+      <select
+        aria-label="Filter leads by stage"
+        value={stage}
+        onChange={(event) => onStageChange(event.target.value)}
+        className={selectClassName}
+      >
+        <option value="">Stage: All</option>
+        <option value="new">New</option>
+        <option value="contacted">Contacted</option>
+        <option value="qualified">Qualified</option>
+        <option value="unqualified">Unqualified</option>
+      </select>
+
+      <select
+        aria-label="Filter leads by source"
+        value={source}
+        onChange={(event) => onSourceChange(event.target.value)}
+        className={selectClassName}
+      >
+        <option value="">Source: All</option>
+        <option value="website">Website</option>
+        <option value="referral">Referral</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="facebook">Facebook</option>
+        <option value="instagram">Instagram</option>
+        <option value="social_media">Social Media</option>
+        <option value="phone_call">Phone Call</option>
+        <option value="walk_in">Walk In</option>
+      </select>
+
+      <select
+        aria-label="Filter leads by assigned agent"
+        value={agentId}
+        onChange={(event) => onAgentChange(event.target.value)}
+        className={selectClassName}
+      >
+        <option value="">Agent: All</option>
+
+        {agents.map((agent) => (
+          <option key={agent.id} value={String(agent.id)}>
+            {agent.name}
+          </option>
+        ))}
+      </select>
+
+      <CreateLeadDialog />
     </div>
   );
 }

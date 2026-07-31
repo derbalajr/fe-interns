@@ -14,11 +14,11 @@ interface FormTextFieldProps<TFieldValues extends FieldValues> {
   label: string;
   placeholder?: string;
   description?: string;
-type?: "text" | "email" | "password" | "tel" | "number";  disabled?: boolean;
-min?: number;
-step?: number | string;
+  type?: "text" | "email" | "password" | "tel" | "number";
+  disabled?: boolean;
+  min?: number;
+  step?: number | string;
 }
-
 
 export function FormTextField<TFieldValues extends FieldValues>({
   name,
@@ -47,16 +47,16 @@ export function FormTextField<TFieldValues extends FieldValues>({
         >
           {(describedBy) => (
             <Input
-  {...field}
-  id={id}
-  type={type}
-  placeholder={placeholder}
-  disabled={disabled}
-  min={min}
-  step={step}
-  aria-invalid={fieldState.invalid || undefined}
-  aria-describedby={describedBy}
-/>
+              {...field}
+              id={id}
+              type={type}
+              placeholder={placeholder}
+              disabled={disabled}
+              min={min}
+              step={step}
+              aria-invalid={fieldState.invalid || undefined}
+              aria-describedby={describedBy}
+            />
           )}
         </FormFieldWrapper>
       )}
