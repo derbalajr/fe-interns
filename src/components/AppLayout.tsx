@@ -242,7 +242,7 @@ export function AppLayout() {
           >
             {user?.name?.charAt(0).toUpperCase() ?? "U"}
           </div>
-        </aside>
+                  </aside>
 
         <main className="min-h-screen pt-[112px]">
           <div className="px-4 pb-12 sm:px-6 xl:px-[170px]">
