@@ -24,10 +24,10 @@ export function CreateUserDialog({ trigger }: CreateUserDialogProps) {
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create User</DialogTitle>
+          <DialogTitle>New Agent</DialogTitle>
 
           <DialogDescription>
-            Add a new user and assign their role.
+            Add a new agent and assign their role.
           </DialogDescription>
         </DialogHeader>
 

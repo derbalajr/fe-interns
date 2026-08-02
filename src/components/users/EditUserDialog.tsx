@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -15,6 +17,16 @@ type EditUserDialogProps = {
 };
 
 export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
+  // Keep the last selected user around so the form stays mounted while the
+  // dialog plays its close animation (avoids a flash of empty content).
+  const [renderedUser, setRenderedUser] = useState<User | null>(user);
+
+  useEffect(() => {
+    if (user) {
+      setRenderedUser(user);
+    }
+  }, [user]);
+
   return (
     <Dialog
       open={user !== null}
@@ -26,12 +38,12 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
+          <DialogTitle>Edit Agent</DialogTitle>
 
-          <DialogDescription>Update the user's information.</DialogDescription>
+          <DialogDescription>Update the agent's information.</DialogDescription>
         </DialogHeader>
 
-        {user && <UserForm user={user} onSuccess={onClose} />}
+        {renderedUser && <UserForm user={renderedUser} onSuccess={onClose} />}
       </DialogContent>
     </Dialog>
   );

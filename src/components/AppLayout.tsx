@@ -24,6 +24,7 @@ import {
 
 import { APP_MODULES } from "@/constants/modules";
 import { useAuth } from "@/context/AuthContext";
+import { canManageUsers } from "@/lib/permissions";
 import { useTenant } from "@/hooks/use-tenant";
 import { ChatDrawer } from "@/components/chatbot/ChatDrawer";
 import { OnboardingChat } from "@/components/onboarding/OnboardingChat";
@@ -79,6 +80,10 @@ export function AppLayout() {
   }
 
   const modules = APP_MODULES.filter((module) => {
+    if (module.managerOnly && !canManageUsers(user)) {
+      return false;
+    }
+
     if (!module.tenants) {
       return true;
     }
@@ -237,7 +242,7 @@ export function AppLayout() {
           >
             {user?.name?.charAt(0).toUpperCase() ?? "U"}
           </div>
-        </aside>
+                  </aside>
 
         <main className="min-h-screen pt-[112px]">
           <div className="px-4 pb-12 sm:px-6 xl:px-[170px]">

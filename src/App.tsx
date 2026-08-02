@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { LeadDetailsPage } from "@/pages/LeadDetailsPage";
 import { AppLayout } from "@/components/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ManagerRoute } from "@/components/ManagerRoute";
 import { PublicOnlyRoute } from "@/components/PublicOnlyRoute";
 import { TenantRoute } from "@/components/TenantRoute";
 import { CustomersPage } from "@/pages/CustomersPage";
@@ -76,7 +77,9 @@ function App() {
             }
           />
 
-          <Route path="users" element={<UsersPage />} />
+          <Route element={<ManagerRoute />}>
+            <Route path="users" element={<UsersPage />} />
+          </Route>
         </Route>
       </Route>
 
