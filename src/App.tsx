@@ -14,6 +14,7 @@ import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
 import UsersPage from "@/pages/UsersPage";
+import RolesPage from "./pages/RolesPage";
 
 function App() {
   return (
@@ -88,6 +89,11 @@ function App() {
           {/* Users permission */}
           <Route element={<ProtectedRoute permission="view-users" />}>
             <Route path="users" element={<UsersPage />} />
+          </Route>
+
+          {/* Roles permission */}
+          <Route element={<ProtectedRoute permission="view-roles" />}>
+            <Route path="roles" element={<RolesPage />} />
           </Route>
         </Route>
       </Route>

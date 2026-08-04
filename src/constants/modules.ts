@@ -35,7 +35,12 @@ export const APP_MODULES: AppModule[] = [
   {
     label: "Users",
     path: "/users",
-    permission:"view-users",
+    permission: "view-users",
     tenants: ["marq"],
+  },
+  {
+    label: "Roles",
+    path: "/roles",
+    permission: "view-roles",
   },
 ];
