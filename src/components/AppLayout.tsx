@@ -24,7 +24,6 @@ import {
 
 import { APP_MODULES } from "../constants/modules";
 import { useAuth } from "../context/AuthContext";
-import { getCurrentTenant } from "../lib/tenant";
 import { useCan } from "../hooks/use-can";
 import { useTenant } from "@/hooks/use-tenant";
 import { ChatDrawer } from "@/components/chatbot/ChatDrawer";
@@ -43,7 +42,8 @@ const iconMap = {
 export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { can } = useCan();
+  
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { logout, user, isLoadingUser } = useAuth();
@@ -80,7 +80,7 @@ export function AppLayout() {
     );
   }
 
-  const modules = APP_MODULES.filter((module) => {
+ const modules = APP_MODULES.filter((module) => {
   const tenantAllowed =
     !module.tenants || module.tenants.includes(tenant.id);
 

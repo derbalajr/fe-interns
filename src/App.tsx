@@ -1,12 +1,14 @@
 import { Route, Routes } from "react-router-dom";
-import { LeadDetailsPage } from "@/pages/LeadDetailsPage";
+
 import { AppLayout } from "@/components/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PublicOnlyRoute } from "@/components/PublicOnlyRoute";
 import { TenantRoute } from "@/components/TenantRoute";
+
 import { CustomersPage } from "@/pages/CustomersPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import DealsPage from "@/pages/DealsPage";
+import { LeadDetailsPage } from "@/pages/LeadDetailsPage";
 import LeadsPage from "@/pages/LeadsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -21,11 +23,12 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
       </Route>
 
-      {/* Protected routes */}
+      {/* Authenticated routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
 
+          {/* TAI */}
           <Route
             path="leads"
             element={
@@ -55,7 +58,8 @@ function App() {
 
           <Route path="customers" element={<CustomersPage />} />
 
-         <Route
+          {/* MARQ */}
+          <Route
             path="reservations"
             element={
               <TenantRoute allowedTenant="marq">
@@ -63,20 +67,28 @@ function App() {
               </TenantRoute>
             }
           />
-         <Route element={<ProtectedRoute permission="view-users" />}>
-          <Route
-            path="projects"
-            element={
-              <TenantRoute allowedTenant="marq">
-                <div className="p-8">
-                  <h1 className="text-2xl font-bold">Projects</h1>
-                  <p className="text-slate-600">Projects page coming soon...</p>
-                </div>
-              </TenantRoute>
-            }
-          />
-          <Route path="users" element={<UsersPage />} />
-         </Route>
+
+          {/* Projects permission */}
+          <Route element={<ProtectedRoute permission="view-projects" />}>
+            <Route
+              path="projects"
+              element={
+                <TenantRoute allowedTenant="marq">
+                  <div className="p-8">
+                    <h1 className="text-2xl font-bold">Projects</h1>
+                    <p className="text-slate-600">
+                      Projects page coming soon...
+                    </p>
+                  </div>
+                </TenantRoute>
+              }
+            />
+          </Route>
+
+          {/* Users permission */}
+          <Route element={<ProtectedRoute permission="view-users" />}>
+            <Route path="users" element={<UsersPage />} />
+          </Route>
         </Route>
       </Route>
 
