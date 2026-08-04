@@ -14,32 +14,27 @@ import { Input } from "@/components/ui/input";
 import { useRolesQuery } from "@/hooks/use-roles-query";
 
 import type { Role } from "@/types/role";
-import { useDeleteRoleMutation } from "@/hooks/use-delete-role-mutation";
 import { DeleteRoleDialog } from "@/components/roles/DeleteRoleDialog";
+
 export default function RolesPage() {
   const { data = [], isLoading, isError } = useRolesQuery();
-  const deleteMutation = useDeleteRoleMutation();
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [roleToDelete, setRoleToDelete] =
-    useState<Role | null>(null);
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
   const roles = useMemo(() => {
     return data.filter((role) =>
       role.name.toLowerCase().includes(search.toLowerCase()),
     );
   }, [data, search]);
 
- const columns = useMemo(
-  () =>
-    getRoleColumns(
-      (role) => {
-        setSelectedRole(role);
-      },
-       
-     (role) => setRoleToDelete(role),
-    ),
-  [deleteMutation],
-);
+  const columns = useMemo(
+    () =>
+      getRoleColumns(
+        (role) => setSelectedRole(role),
+        (role) => setRoleToDelete(role),
+      ),
+    [],
+  );
 
   if (isLoading) {
     return (
@@ -97,21 +92,17 @@ export default function RolesPage() {
       </div>
 
       {/* Table */}
-      <DataTable
-        columns={columns}
-        data={roles}
-      />
+      <DataTable columns={columns} data={roles} />
 
       {/* Edit Dialog */}
       <EditRoleDialog
         role={selectedRole}
         onClose={() => setSelectedRole(null)}
       />
-       <DeleteRoleDialog
-  role={roleToDelete}
-  onClose={() => setRoleToDelete(null)}
-/>
+      <DeleteRoleDialog
+        role={roleToDelete}
+        onClose={() => setRoleToDelete(null)}
+      />
     </div>
-
   );
 }

@@ -4,6 +4,7 @@ export type AppModule = {
   label: string;
   path: string;
   tenants?: TenantId[];
+  permission?: string;
 };
 
 export const APP_MODULES: AppModule[] = [
@@ -34,9 +35,12 @@ export const APP_MODULES: AppModule[] = [
   {
     label: "Users",
     path: "/users",
+    permission: "view-users",
+    tenants: ["marq"],
   },
   {
     label: "Roles",
     path: "/roles",
-}
+    permission: "view-roles",
+  },
 ];

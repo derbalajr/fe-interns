@@ -1,9 +1,4 @@
-import {
-  apiDelete,
-  apiGet,
-  apiPost,
-  apiPut,
-} from "@/lib/fetcher";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/fetcher";
 
 import type { RolePayload } from "@/schemas/role-schema";
 
@@ -25,14 +20,8 @@ export function createRole(data: RolePayload) {
   return apiPost<RoleResponse, RolePayload>("/roles", data);
 }
 
-export function updateRole(
-  id: number,
-  data: RolePayload,
-) {
-  return apiPut<RoleResponse, RolePayload>(
-    `/roles/${id}`,
-    data,
-  );
+export function updateRole(id: number, data: RolePayload) {
+  return apiPut<RoleResponse, RolePayload>(`/roles/${id}`, data);
 }
 
 export function deleteRole(id: number) {

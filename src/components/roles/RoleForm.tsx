@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +10,7 @@ import { useCreateRoleMutation } from "@/hooks/use-create-role-mutation";
 import { usePermissionsQuery } from "@/hooks/use-permissions-query";
 import { useUpdateRoleMutation } from "@/hooks/use-update-role-mutation";
 
-import {
-  roleSchema,
-  type RolePayload,
-} from "@/schemas/role-schema";
+import { roleSchema, type RolePayload } from "@/schemas/role-schema";
 
 import type { Role } from "@/types/role";
 
@@ -21,10 +19,7 @@ type RoleFormProps = {
   onSuccess?: () => void;
 };
 
-export function RoleForm({
-  role,
-  onSuccess,
-}: RoleFormProps) {
+export function RoleForm({ role, onSuccess }: RoleFormProps) {
   const createMutation = useCreateRoleMutation();
   const updateMutation = useUpdateRoleMutation();
 
@@ -49,9 +44,7 @@ export function RoleForm({
     if (role) {
       reset({
         name: role.name,
-        permissions: role.permissions.map(
-          (permission) => permission.name,
-        ),
+        permissions: role.permissions.map((permission) => permission.name),
       });
     } else {
       reset({
@@ -72,62 +65,50 @@ export function RoleForm({
         ),
       );
     } else {
-      setValue("permissions", [
-        ...selectedPermissions,
-        permissionName,
-      ]);
+      setValue("permissions", [...selectedPermissions, permissionName]);
     }
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    if (role) {
-      await updateMutation.mutateAsync({
-        id: role.id,
-        data: values,
-      });
-    } else {
-      await createMutation.mutateAsync(values);
+    try {
+      if (role) {
+        await updateMutation.mutateAsync({
+          id: role.id,
+          data: values,
+        });
+        toast.success("Role updated");
+      } else {
+        await createMutation.mutateAsync(values);
+        toast.success("Role created");
+      }
+
+      reset();
+      onSuccess?.();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     }
-
-    reset();
-
-    onSuccess?.();
   });
 
-  const isPending =
-    createMutation.isPending || updateMutation.isPending;
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="space-y-5"
-      noValidate
-    >
+    <form onSubmit={onSubmit} className="space-y-5" noValidate>
       <div>
-        <label
-          htmlFor="name"
-          className="mb-2 block text-sm font-medium"
-        >
+        <label htmlFor="name" className="mb-2 block text-sm font-medium">
           Role Name
         </label>
 
-        <Input
-          id="name"
-          placeholder="Manager"
-          {...register("name")}
-        />
+        <Input id="name" placeholder="Manager" {...register("name")} />
 
         {errors.name && (
-          <p className="mt-1 text-sm text-red-500">
-            {errors.name.message}
-          </p>
+          <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
         )}
       </div>
 
       <div>
-        <label className="mb-3 block text-sm font-medium">
-          Permissions
-        </label>
+        <label className="mb-3 block text-sm font-medium">Permissions</label>
 
         <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto rounded-lg border p-4">
           {permissions.map((permission) => (
@@ -138,25 +119,18 @@ export function RoleForm({
               <input
                 type="checkbox"
                 checked={selectedPermissions.includes(permission.name)}
-                onChange={() =>
-                  togglePermission(permission.name)
-                }
+                onChange={() => togglePermission(permission.name)}
                 className="h-4 w-4"
               />
 
-              <span className="text-sm">
-                {permission.name}
-              </span>
+              <span className="text-sm">{permission.name}</span>
             </label>
           ))}
         </div>
       </div>
 
       <div className="flex justify-end">
-        <Button
-          type="submit"
-          disabled={isPending}
-        >
+        <Button type="submit" disabled={isPending}>
           {role ? "Save Changes" : "Create Role"}
         </Button>
       </div>

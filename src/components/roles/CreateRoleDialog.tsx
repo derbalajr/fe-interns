@@ -15,9 +15,7 @@ type CreateRoleDialogProps = {
   trigger: ReactElement;
 };
 
-export function CreateRoleDialog({
-  trigger,
-}: CreateRoleDialogProps) {
+export function CreateRoleDialog({ trigger }: CreateRoleDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (

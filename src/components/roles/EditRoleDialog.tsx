@@ -14,10 +14,7 @@ type EditRoleDialogProps = {
   onClose: () => void;
 };
 
-export function EditRoleDialog({
-  role,
-  onClose,
-}: EditRoleDialogProps) {
+export function EditRoleDialog({ role, onClose }: EditRoleDialogProps) {
   return (
     <Dialog
       open={role !== null}
@@ -29,17 +26,10 @@ export function EditRoleDialog({
         <DialogHeader>
           <DialogTitle>Edit Role</DialogTitle>
 
-          <DialogDescription>
-            Update role permissions.
-          </DialogDescription>
+          <DialogDescription>Update role permissions.</DialogDescription>
         </DialogHeader>
 
-        {role && (
-          <RoleForm
-            role={role}
-            onSuccess={onClose}
-          />
-        )}
+        {role && <RoleForm role={role} onSuccess={onClose} />}
       </DialogContent>
     </Dialog>
   );

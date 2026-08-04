@@ -8,4 +8,8 @@ export interface User {
   email: string;
   role: UserRole;
   status: UserStatus;
+  // Populated by the API for the authenticated user; may be absent on other
+  // payloads (mock data, list rows), so consumers must null-guard.
+  roles?: string[];
+  permissions?: string[];
 }
