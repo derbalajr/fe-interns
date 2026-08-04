@@ -35,4 +35,8 @@ export const APP_MODULES: AppModule[] = [
     label: "Users",
     path: "/users",
   },
+  {
+    label: "Roles",
+    path: "/roles",
+}
 ];

@@ -12,6 +12,7 @@ import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
 import UsersPage from "@/pages/UsersPage";
+import RolesPage from "./pages/RolesPage";
 
 function App() {
   return (
@@ -54,7 +55,7 @@ function App() {
           />
 
           <Route path="customers" element={<CustomersPage />} />
-
+          <Route path="/roles" element={<RolesPage />} />
           <Route
             path="reservations"
             element={
@@ -81,6 +82,7 @@ function App() {
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />
+    
     </Routes>
   );
 }
