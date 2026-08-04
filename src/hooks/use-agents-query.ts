@@ -11,8 +11,10 @@ export function useAgentsQuery() {
     queryFn: async () => {
       const response = await getAssignableAgents();
 
-      return response.data.filter((user) =>
-        user.roles.some((role) => role.trim().toLowerCase() === "agent"),
+      return response.data.filter(
+        (user) =>
+          user.roles?.some((role) => role.trim().toLowerCase() === "agent") ??
+          false,
       );
     },
   });
