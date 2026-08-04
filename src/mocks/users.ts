@@ -7,6 +7,8 @@ export const mockUsers: User[] = [
     email: "salma@crm.com",
     role: "Manager",
     status: "Active",
+    roles: ["manager"],
+    permissions: [],
   },
   {
     id: 2,
@@ -14,6 +16,8 @@ export const mockUsers: User[] = [
     email: "ahmed@crm.com",
     role: "Agent",
     status: "Active",
+    roles: ["agent"],
+    permissions: [],
   },
   {
     id: 3,
@@ -21,6 +25,8 @@ export const mockUsers: User[] = [
     email: "mariam@crm.com",
     role: "Agent",
     status: "Inactive",
+    roles: ["agent"],
+    permissions: [],
   },
   {
     id: 4,
@@ -28,5 +34,7 @@ export const mockUsers: User[] = [
     email: "omar@crm.com",
     role: "Agent",
     status: "Active",
+    roles: ["agent"],
+    permissions: [],
   },
 ];
