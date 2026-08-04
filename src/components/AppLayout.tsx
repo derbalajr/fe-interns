@@ -22,8 +22,9 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import { APP_MODULES } from "@/constants/modules";
-import { useAuth } from "@/context/AuthContext";
+import { APP_MODULES } from "../constants/modules";
+import { useAuth } from "../context/AuthContext";
+import { useCan } from "../hooks/use-can";
 import { useTenant } from "@/hooks/use-tenant";
 import { ChatDrawer } from "@/components/chatbot/ChatDrawer";
 import { OnboardingChat } from "@/components/onboarding/OnboardingChat";
@@ -41,7 +42,8 @@ const iconMap = {
 export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { can } = useCan();
+  
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { logout, user, isLoadingUser } = useAuth();
@@ -78,14 +80,15 @@ export function AppLayout() {
     );
   }
 
-  const modules = APP_MODULES.filter((module) => {
-    if (!module.tenants) {
-      return true;
-    }
+ const modules = APP_MODULES.filter((module) => {
+  const tenantAllowed =
+    !module.tenants || module.tenants.includes(tenant.id);
 
-    return module.tenants.includes(tenant.id);
-  });
+  const permissionAllowed =
+    !module.permission || can(module.permission);
 
+  return tenantAllowed && permissionAllowed;
+});
   const handleLogout = async () => {
     await logout();
     navigate("/login", { replace: true });
