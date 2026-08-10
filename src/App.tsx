@@ -11,6 +11,9 @@ import DealsPage from "@/pages/DealsPage";
 import LeadsPage from "@/pages/LeadsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { ProjectsPage } from "@/pages/ProjectsPage";
+import { ProjectUnitsPage } from "@/pages/ProjectUnitsPage";
+import { UnitDetailPage } from "@/pages/UnitDetailPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
 import UsersPage from "@/pages/UsersPage";
 
@@ -69,10 +72,25 @@ function App() {
             path="projects"
             element={
               <TenantRoute allowedTenant="marq">
-                <div className="p-8">
-                  <h1 className="text-2xl font-bold">Projects</h1>
-                  <p className="text-slate-600">Projects page coming soon...</p>
-                </div>
+                <ProjectsPage />
+              </TenantRoute>
+            }
+          />
+
+          <Route
+            path="projects/:projectId"
+            element={
+              <TenantRoute allowedTenant="marq">
+                <ProjectUnitsPage />
+              </TenantRoute>
+            }
+          />
+
+          <Route
+            path="units/:unitId"
+            element={
+              <TenantRoute allowedTenant="marq">
+                <UnitDetailPage />
               </TenantRoute>
             }
           />

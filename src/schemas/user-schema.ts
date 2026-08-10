@@ -42,7 +42,15 @@ export const createUserSchema = baseUserSchema
     path: ["password_confirmation"],
   });
 
-export const updateUserSchema = baseUserSchema;
+export const updateUserSchema = baseUserSchema.refine(
+  // On edit the password is optional; only enforce the match when a new
+  // (non-empty) password is actually being set.
+  (data) => !data.password || data.password === data.password_confirmation,
+  {
+    message: "Passwords do not match",
+    path: ["password_confirmation"],
+  },
+);
 
 export const userSchema = baseUserSchema;
 

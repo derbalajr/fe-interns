@@ -29,7 +29,7 @@ export const APP_MODULES: AppModule[] = [
     tenants: ["marq"],
   },
   {
-    label: "Projects",
+    label: "Inventory",
     path: "/projects",
     tenants: ["marq"],
   },

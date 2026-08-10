@@ -1,10 +1,9 @@
 import { apiGet } from "@/lib/fetcher";
+import type { Role } from "@/types/user";
 
-export type Role = {
-  id: number;
-  name: string;
-  guard_name: string;
-};
+// Single canonical definition lives in `@/types/user`; re-exported here so
+// existing imports from `@/api/roles` keep working.
+export type { Role };
 
 export async function getRoles(): Promise<Role[]> {
   const response = await apiGet<Role[] | { data: Role[] }>("/roles");

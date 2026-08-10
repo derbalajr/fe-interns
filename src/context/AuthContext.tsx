@@ -128,6 +128,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (isActive && error instanceof ApiError && error.status === 401) {
           clearSession();
         }
+      })
+      .finally(() => {
+        if (isActive) setIsLoadingUser(false);
       });
 
     return () => {

@@ -4,6 +4,7 @@ export type UnitProject = {
   id: number;
   name?: string;
   title?: string;
+  location?: string | null;
 };
 
 export type Unit = {
