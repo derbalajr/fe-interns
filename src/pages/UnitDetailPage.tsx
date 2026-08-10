@@ -2,11 +2,14 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { ReserveUnitDialog } from "@/components/reservations/ReserveUnitDialog";
 import { UnitStatusBadge } from "@/components/units/UnitStatusBadge";
 import { EmptyState } from "@/components/states/EmptyState";
+import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/fetcher";
 import { formatCurrency } from "@/lib/format";
 import { getUnitGallery } from "@/lib/unit-images";
+import { useCan } from "@/hooks/use-can";
 import { useUnitQuery } from "@/hooks/use-unit-query";
 import { formatUnitArea, getProjectName } from "@/utils/unit";
 
@@ -14,6 +17,7 @@ export function UnitDetailPage() {
   const navigate = useNavigate();
   const { unitId = "" } = useParams();
 
+  const { can } = useCan();
   const { data: unit, isLoading, isError, error } = useUnitQuery(unitId);
 
   const gallery = useMemo(
@@ -21,6 +25,7 @@ export function UnitDetailPage() {
     [unit],
   );
   const [activeImage, setActiveImage] = useState(0);
+  const [isReserveOpen, setIsReserveOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -73,7 +78,22 @@ export function UnitDetailPage() {
           </p>
         </div>
 
-        <UnitStatusBadge status={unit.status} className="px-3 py-1.5 text-xs" />
+        <div className="flex items-center gap-3">
+          <UnitStatusBadge
+            status={unit.status}
+            className="px-3 py-1.5 text-xs"
+          />
+
+          {unit.status === "available" && can("create-reservations") && (
+            <Button
+              type="button"
+              onClick={() => setIsReserveOpen(true)}
+              className="h-10 rounded-xl px-4 text-sm"
+            >
+              Reserve for client
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
@@ -140,6 +160,13 @@ export function UnitDetailPage() {
           </dl>
         </aside>
       </div>
+
+      <ReserveUnitDialog
+        unit={unit}
+        open={isReserveOpen}
+        onClose={() => setIsReserveOpen(false)}
+        onReserved={() => navigate("/reservations")}
+      />
     </section>
   );
 }
