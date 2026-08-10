@@ -4,8 +4,7 @@ export type AppModule = {
   label: string;
   path: string;
   tenants?: TenantId[];
-  /** When true, the module is hidden from agents (managers/admins only). */
-  managerOnly?: boolean;
+  permission?: string;
 };
 
 export const APP_MODULES: AppModule[] = [
@@ -24,6 +23,10 @@ export const APP_MODULES: AppModule[] = [
     tenants: ["tai"],
   },
   {
+    label: "Customers",
+    path: "/customers",
+  },
+  {
     label: "Reservations",
     path: "/reservations",
     tenants: ["marq"],
@@ -31,11 +34,19 @@ export const APP_MODULES: AppModule[] = [
   {
     label: "Inventory",
     path: "/projects",
+    permission: "view-projects",
     tenants: ["marq"],
   },
   {
     label: "Users",
     path: "/users",
-    managerOnly: true,
+    permission: "view-users",
+    tenants: ["marq"],
+  },
+  {
+    label: "Roles",
+    path: "/roles",
+    permission: "view-roles",
+    tenants: ["marq"],
   },
 ];

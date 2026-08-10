@@ -22,12 +22,12 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import { APP_MODULES } from "@/constants/modules";
-import { useAuth } from "@/context/AuthContext";
-import { canManageUsers } from "@/lib/permissions";
-import { useTenant } from "@/hooks/use-tenant";
 import { ChatDrawer } from "@/components/chatbot/ChatDrawer";
 import { OnboardingChat } from "@/components/onboarding/OnboardingChat";
+import { APP_MODULES } from "@/constants/modules";
+import { useAuth } from "@/context/AuthContext";
+import { useCan } from "@/hooks/use-can";
+import { useTenant } from "@/hooks/use-tenant";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
@@ -43,6 +43,7 @@ const iconMap = {
 export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { can } = useCan();
 
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -66,7 +67,7 @@ export function AppLayout() {
 
   if (isLoadingUser || isLoadingTenant) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-[#666666]">
+      <div className="flex min-h-screen items-center justify-center">
         Loading your workspace...
       </div>
     );
@@ -74,22 +75,20 @@ export function AppLayout() {
 
   if (!tenant) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-[#666666]">
+      <div className="flex min-h-screen items-center justify-center">
         No valid workspace assigned. Redirecting...
       </div>
     );
   }
 
   const modules = APP_MODULES.filter((module) => {
-    if (module.managerOnly && !canManageUsers(user)) {
-      return false;
-    }
+    const tenantAllowed =
+      !module.tenants || module.tenants.includes(tenant.id);
 
-    if (!module.tenants) {
-      return true;
-    }
+    const permissionAllowed =
+      !module.permission || can(module.permission);
 
-    return module.tenants.includes(tenant.id);
+    return tenantAllowed && permissionAllowed;
   });
 
   const handleLogout = async () => {
@@ -243,7 +242,7 @@ export function AppLayout() {
           >
             {user?.name?.charAt(0).toUpperCase() ?? "U"}
           </div>
-                  </aside>
+        </aside>
 
         <main className="min-h-screen pt-[112px]">
           <div className="px-4 pb-12 sm:px-6 xl:px-[170px]">

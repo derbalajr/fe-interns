@@ -2,26 +2,40 @@ export type UserRole = "Manager" | "Agent";
 
 export type UserStatus = "Active" | "Inactive";
 
-export interface Role {
+// The `Role` entity lives in `@/types/role` (the richer definition used across
+// the app); import it from there rather than redefining it here.
+
+/**
+ * A role as it can arrive embedded on a user payload: either a plain name
+ * string ("Manager", "agent", …) or a `{ id, name }` object. The helpers in
+ * `@/lib/user` normalise both shapes.
+ */
+export interface UserRoleObject {
   id: number;
   name: string;
-  guard_name: string;
 }
 
 export interface User {
   id: number;
   name: string;
   email: string;
-  // The API returns the primary role as an object ({ id, name }); older/mock
-  // data may use a plain string. Support both.
-  role?: UserRole | string | Role | null;
-  status?: UserStatus | string;
+
+  // The backend is inconsistent about the primary role: it may be a display
+  // string (incl. the legacy "Manager"/"Agent" values) or an embedded
+  // `{ id, name }` object. Some payloads instead carry it under `roleObj`.
+  role: UserRole | string | UserRoleObject;
+  roleObj?: UserRoleObject;
+
+  // Status may arrive normalised, or only as an `active` boolean we derive from.
+  status?: UserStatus;
   active?: boolean;
-  tenant?: string;
-  roles?: string[];
-  permissions?: string[];
-  roleObj?: Role | null;
-  // Not provided by the backend yet — shown as placeholders in the table.
+
+  // Optional profile fields shown in the Users directory; absent on some rows.
   position?: string;
   phone?: string;
+
+  // Populated by the API for the authenticated user; may be absent on other
+  // payloads (mock data, list rows), so consumers must null-guard.
+  roles?: string[];
+  permissions?: string[];
 }
