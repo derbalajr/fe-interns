@@ -1,27 +1,44 @@
-import { ArrowRight, Building2, MapPin } from "lucide-react";
+import { ArrowRight, Building2, MapPin, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { EmptyState } from "@/components/states/EmptyState";
+import { Button } from "@/components/ui/button";
+import { useCan } from "@/hooks/use-can";
 import { useProjectsQuery } from "@/hooks/use-projects-query";
 import { getProjectImage } from "@/lib/unit-images";
 import type { Project } from "@/types/project";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
+  const { can } = useCan();
   const { data, isLoading, isError, refetch } = useProjectsQuery();
 
   const projects = data?.data ?? [];
 
   return (
     <section className="mx-auto w-full max-w-[1180px]">
-      <div className="mb-7">
-        <h1 className="text-[34px] font-semibold tracking-[-0.04em] text-[#171717]">
-          Inventory
-        </h1>
+      <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[34px] font-semibold tracking-[-0.04em] text-[#171717]">
+            Projects
+          </h1>
 
-        <p className="mt-1.5 text-sm text-[#777777]">
-          Projects and units across the MarQ portfolio.
-        </p>
+          <p className="mt-1.5 text-sm text-[#777777]">
+            Projects across the MarQ portfolio.
+          </p>
+        </div>
+
+        {can("create-projects") && (
+          <CreateProjectDialog
+            trigger={
+              <Button type="button" className="h-10 gap-1.5 rounded-xl px-4">
+                <Plus className="h-4 w-4" />
+                Create project
+              </Button>
+            }
+          />
+        )}
       </div>
 
       {isLoading ? (

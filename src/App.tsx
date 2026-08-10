@@ -14,7 +14,8 @@ import LeadsPage from "@/pages/LeadsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProjectsPage } from "@/pages/ProjectsPage";
-import { ProjectUnitsPage } from "@/pages/ProjectUnitsPage";
+import { ProjectDetailsPage } from "@/pages/ProjectDetailsPage";
+import { UnitsPage } from "@/pages/UnitsPage";
 import { UnitDetailPage } from "@/pages/UnitDetailPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
 import UsersPage from "@/pages/UsersPage";
@@ -73,8 +74,7 @@ function App() {
             }
           />
 
-          {/* Inventory: projects, their units, and unit detail (MARQ,
-              gated by view-projects). */}
+          {/* Projects list + project details (MARQ, gated by view-projects). */}
           <Route element={<ProtectedRoute permission="view-projects" />}>
             <Route
               path="projects"
@@ -89,7 +89,19 @@ function App() {
               path="projects/:projectId"
               element={
                 <TenantRoute allowedTenant="marq">
-                  <ProjectUnitsPage />
+                  <ProjectDetailsPage />
+                </TenantRoute>
+              }
+            />
+          </Route>
+
+          {/* Units: global list + unit detail (MARQ, gated by view-units). */}
+          <Route element={<ProtectedRoute permission="view-units" />}>
+            <Route
+              path="units"
+              element={
+                <TenantRoute allowedTenant="marq">
+                  <UnitsPage />
                 </TenantRoute>
               }
             />
