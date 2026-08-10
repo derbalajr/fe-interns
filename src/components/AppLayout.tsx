@@ -22,12 +22,12 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import { APP_MODULES } from "../constants/modules";
-import { useAuth } from "../context/AuthContext";
-import { useCan } from "../hooks/use-can";
-import { useTenant } from "@/hooks/use-tenant";
 import { ChatDrawer } from "@/components/chatbot/ChatDrawer";
 import { OnboardingChat } from "@/components/onboarding/OnboardingChat";
+import { APP_MODULES } from "@/constants/modules";
+import { useAuth } from "@/context/AuthContext";
+import { useCan } from "@/hooks/use-can";
+import { useTenant } from "@/hooks/use-tenant";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
@@ -36,6 +36,7 @@ const iconMap = {
   Customers: Users,
   Reservations: CalendarDays,
   Projects: Building2,
+  Inventory: Building2,
   Users: ShieldCheck,
 };
 
@@ -43,7 +44,7 @@ export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
-  
+
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { logout, user, isLoadingUser } = useAuth();
@@ -66,7 +67,7 @@ export function AppLayout() {
 
   if (isLoadingUser || isLoadingTenant) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-[#666666]">
+      <div className="flex min-h-screen items-center justify-center">
         Loading your workspace...
       </div>
     );
@@ -74,21 +75,22 @@ export function AppLayout() {
 
   if (!tenant) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-sm font-medium text-[#666666]">
+      <div className="flex min-h-screen items-center justify-center">
         No valid workspace assigned. Redirecting...
       </div>
     );
   }
 
- const modules = APP_MODULES.filter((module) => {
-  const tenantAllowed =
-    !module.tenants || module.tenants.includes(tenant.id);
+  const modules = APP_MODULES.filter((module) => {
+    const tenantAllowed =
+      !module.tenants || module.tenants.includes(tenant.id);
 
-  const permissionAllowed =
-    !module.permission || can(module.permission);
+    const permissionAllowed =
+      !module.permission || can(module.permission);
 
-  return tenantAllowed && permissionAllowed;
-});
+    return tenantAllowed && permissionAllowed;
+  });
+
   const handleLogout = async () => {
     await logout();
     navigate("/login", { replace: true });
@@ -200,7 +202,7 @@ export function AppLayout() {
           </div>
         </header>
 
-        <aside className="fixed left-[calc(50%-660px)] top-[102px] z-40 hidden w-11 flex-col items-center gap-3 xl:flex">
+        <aside className="fixed left-[min(7rem,max(0.75rem,calc(50%-660px)))] top-[102px] z-40 hidden w-11 flex-col items-center gap-3 xl:flex">
           <button
             type="button"
             aria-label="Applications"

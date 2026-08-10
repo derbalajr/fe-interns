@@ -21,6 +21,8 @@ type AuthContextValue = {
   setToken: (token: string) => void;
   setUser: (user: User | null) => void;
   logout: () => Promise<void>;
+  hasPermission: (permission: string) => boolean;
+  hasRole: (role: string) => boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -128,15 +130,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       })
       .finally(() => {
-        if (isActive) {
-          setIsLoadingUser(false);
-        }
+        if (isActive) setIsLoadingUser(false);
       });
 
     return () => {
       isActive = false;
     };
-  }, [clearSession, setUser, token]);
+  }, [token, clearSession]);
+
+  const hasRole = useCallback(
+    (role: string) => user?.roles?.includes(role) ?? false,
+    [user],
+  );
+
+  const hasPermission = useCallback(
+    (permission: string) =>
+      user?.permissions?.includes(permission) ?? false,
+    [user],
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -160,8 +171,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setToken,
       setUser,
       logout,
+      hasPermission,
+      hasRole,
     }),
-    [authenticatedUser, isLoadingUser, logout, setToken, setUser, token],
+    [authenticatedUser, isLoadingUser, logout, setToken, setUser, token, hasPermission, hasRole],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

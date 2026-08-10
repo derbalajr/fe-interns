@@ -1,3 +1,4 @@
+
 import { Route, Routes } from "react-router-dom";
 
 import { AppLayout } from "@/components/AppLayout";
@@ -12,9 +13,12 @@ import { LeadDetailsPage } from "@/pages/LeadDetailsPage";
 import LeadsPage from "@/pages/LeadsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { ProjectsPage } from "@/pages/ProjectsPage";
+import { ProjectUnitsPage } from "@/pages/ProjectUnitsPage";
+import { UnitDetailPage } from "@/pages/UnitDetailPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
 import UsersPage from "@/pages/UsersPage";
-import RolesPage from "./pages/RolesPage";
+import RolesPage from "@/pages/RolesPage";
 
 function App() {
   return (
@@ -69,18 +73,32 @@ function App() {
             }
           />
 
-          {/* Projects permission */}
+          {/* Inventory: projects, their units, and unit detail (MARQ,
+              gated by view-projects). */}
           <Route element={<ProtectedRoute permission="view-projects" />}>
             <Route
               path="projects"
               element={
                 <TenantRoute allowedTenant="marq">
-                  <div className="p-8">
-                    <h1 className="text-2xl font-bold">Projects</h1>
-                    <p className="text-slate-600">
-                      Projects page coming soon...
-                    </p>
-                  </div>
+                  <ProjectsPage />
+                </TenantRoute>
+              }
+            />
+
+            <Route
+              path="projects/:projectId"
+              element={
+                <TenantRoute allowedTenant="marq">
+                  <ProjectUnitsPage />
+                </TenantRoute>
+              }
+            />
+
+            <Route
+              path="units/:unitId"
+              element={
+                <TenantRoute allowedTenant="marq">
+                  <UnitDetailPage />
                 </TenantRoute>
               }
             />
@@ -95,12 +113,13 @@ function App() {
           <Route element={<ProtectedRoute permission="view-roles" />}>
             <Route path="roles" element={<RolesPage />} />
           </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
-
-      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
 
 export default App;
+

@@ -23,13 +23,18 @@ export const APP_MODULES: AppModule[] = [
     tenants: ["tai"],
   },
   {
+    label: "Customers",
+    path: "/customers",
+  },
+  {
     label: "Reservations",
     path: "/reservations",
     tenants: ["marq"],
   },
   {
-    label: "Projects",
+    label: "Inventory",
     path: "/projects",
+    permission: "view-projects",
     tenants: ["marq"],
   },
   {
@@ -42,5 +47,6 @@ export const APP_MODULES: AppModule[] = [
     label: "Roles",
     path: "/roles",
     permission: "view-roles",
+    tenants: ["marq"],
   },
 ];

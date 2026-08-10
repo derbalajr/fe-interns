@@ -1,19 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getUnits } from "@/api/unitApi";
+import { getUnits, type UnitFilters } from "@/api/unitApi";
 
 export const unitsQueryKey = ["units"] as const;
 
-interface UseUnitsQueryParams {
-  page?: number;
-}
+export function useUnitsQuery(filters: UnitFilters = {}) {
+  const { page = 1, type, status, minPrice, maxPrice, sort } = filters;
 
-export function useUnitsQuery({
-  page = 1,
-}: UseUnitsQueryParams = {}) {
   return useQuery({
-    queryKey: [...unitsQueryKey, page],
-    queryFn: () => getUnits(page),
+    // Every filter is part of the key so react-query caches each
+    // server-side result set independently.
+    queryKey: [
+      ...unitsQueryKey,
+      { page, type, status, minPrice, maxPrice, sort },
+    ],
+    queryFn: () => getUnits(filters),
     placeholderData: (previousData) => previousData,
- });
+  });
 }
