@@ -10,12 +10,12 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "../components/PageHeader";
-import { useAuth } from "../context/AuthContext";
+import { useProfileQuery } from "@/hooks/use-profile-query";
 
 export function DashboardPage() {
-  const { user, isLoadingUser } = useAuth();
+  const profileQuery = useProfileQuery();
 
-  if (isLoadingUser && !user) {
+  if (profileQuery.isPending) {
     return (
       <div className="rounded-xl border bg-white p-8">
         Loading your workspace...
@@ -23,7 +23,7 @@ export function DashboardPage() {
     );
   }
 
-  if (!user) {
+  if (profileQuery.isError || !profileQuery.data) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-800">
         We could not load your profile.
@@ -34,8 +34,8 @@ export function DashboardPage() {
   return (
     <section className="space-y-8">
       <PageHeader
-        title={`Welcome, ${user.name}`}
-        description="Here's what's happening in your CRM today."
+        title={`Welcome, ${profileQuery.data.name}`}
+        description="Overview of your CRM activity."
       />
 
       {/* KPI Cards */}

@@ -1,6 +1,7 @@
 import { CustomerFormDemo } from "@/components/form/CustomerFormDemo";
 
 import { PageHeader } from "../components/PageHeader";
+import { Can } from "@/components/Can";
 
 export function CustomersPage() {
   return (
@@ -18,13 +19,15 @@ export function CustomersPage() {
         <p className="mt-2 text-sm text-slate-500">
           Customer records will appear here.
         </p>
-
+      <Can permission="create-customers">
+        
         <button
           type="button"
           className="mt-6 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
         >
           Add customer
         </button>
+      </Can>
       </div>
       <div className="space-y-8">
         {/* Existing page content */}

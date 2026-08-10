@@ -12,16 +12,11 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  // The API returns the primary role as an object ({ id, name }); older/mock
-  // data may use a plain string. Support both.
-  role?: UserRole | string | Role | null;
-  status?: UserStatus | string;
-  active?: boolean;
-  tenant?: string;
+  role: UserRole;
+  status: UserStatus;
+
+  // Populated by the API for the authenticated user; may be absent on other
+  // payloads (mock data, list rows), so consumers must null-guard.
   roles?: string[];
   permissions?: string[];
-  roleObj?: Role | null;
-  // Not provided by the backend yet — shown as placeholders in the table.
-  position?: string;
-  phone?: string;
 }

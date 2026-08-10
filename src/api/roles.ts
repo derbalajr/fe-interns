@@ -1,16 +1,29 @@
-import { apiGet } from "@/lib/fetcher";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/fetcher";
 
-export type Role = {
-  id: number;
-  name: string;
-  guard_name: string;
-};
+import type { RolePayload } from "@/schemas/role-schema";
 
-export async function getRoles(): Promise<Role[]> {
-  const response = await apiGet<Role[] | { data: Role[] }>("/roles");
-  // Handle both wrapped and unwrapped responses
-  if (response && typeof response === 'object' && 'data' in response) {
-    return response.data;
-  }
-  return response as Role[];
+import type {
+  PermissionsResponse,
+  RoleResponse,
+  RolesResponse,
+} from "@/types/role";
+
+export function getRoles() {
+  return apiGet<RolesResponse>("/roles");
+}
+
+export function getPermissions() {
+  return apiGet<PermissionsResponse>("/permissions");
+}
+
+export function createRole(data: RolePayload) {
+  return apiPost<RoleResponse, RolePayload>("/roles", data);
+}
+
+export function updateRole(id: number, data: RolePayload) {
+  return apiPut<RoleResponse, RolePayload>(`/roles/${id}`, data);
+}
+
+export function deleteRole(id: number) {
+  return apiDelete(`/roles/${id}`);
 }

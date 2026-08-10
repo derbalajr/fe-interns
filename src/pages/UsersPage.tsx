@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 
 import { ChevronDown, Plus, Search } from "lucide-react";
 
+import { Can } from "@/components/Can";
 import { CreateUserDialog } from "@/components/users/CreateUserDialog";
 import { EditUserDialog } from "@/components/users/EditUserDialog";
 import { DataTable } from "@/components/data-table/DataTable";
@@ -29,7 +30,8 @@ function FilterSelect({
       >
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9a9a]" />
+
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#777777]" />
     </div>
   );
 }
@@ -46,23 +48,28 @@ export default function UsersPage() {
 
   const positionOptions = useMemo(() => {
     const names = new Set<string>();
+
     data.forEach((user) => {
       if (user.position) {
         names.add(user.position);
       }
     });
+
     return Array.from(names).sort();
   }, [data]);
 
   // Role options come from the actual data so the filter always matches.
   const roleOptions = useMemo(() => {
     const names = new Set<string>();
+
     data.forEach((user) => {
       const name = getUserRoleName(user);
+
       if (name) {
         names.add(name);
       }
     });
+
     return Array.from(names).sort();
   }, [data]);
 
@@ -81,9 +88,20 @@ export default function UsersPage() {
       const matchesPosition =
         positionFilter === "All" || user.position === positionFilter;
 
-      return matchesSearch && matchesRole && matchesStatus && matchesPosition;
+      return (
+        matchesSearch &&
+        matchesRole &&
+        matchesStatus &&
+        matchesPosition
+      );
     });
-  }, [data, search, roleFilter, statusFilter, positionFilter]);
+  }, [
+    data,
+    search,
+    roleFilter,
+    statusFilter,
+    positionFilter,
+  ]);
 
   const columns = useMemo(
     () => getUserColumns((user) => setSelectedUser(user)),
@@ -94,10 +112,11 @@ export default function UsersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-[#242424]">
+        <h1 className="text-2xl font-semibold text-[#242424]">
           Agents
         </h1>
-        <p className="mt-1 text-[13px] text-[#8a8a8a]">
+
+        <p className="mt-1 text-sm text-[#8a8a8a]">
           Your Agents Are Working, In One Pipeline.
         </p>
       </div>
@@ -106,6 +125,7 @@ export default function UsersPage() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9a9a]" />
+
           <input
             placeholder="Search Agent..."
             value={search}
@@ -114,14 +134,21 @@ export default function UsersPage() {
           />
         </div>
 
-        <FilterSelect value={statusFilter} onChange={setStatusFilter}>
+        <FilterSelect
+          value={statusFilter}
+          onChange={setStatusFilter}
+        >
           <option value="All">Status: All</option>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </FilterSelect>
 
-        <FilterSelect value={roleFilter} onChange={setRoleFilter}>
+        <FilterSelect
+          value={roleFilter}
+          onChange={setRoleFilter}
+        >
           <option value="All">Role: All</option>
+
           {roleOptions.map((role) => (
             <option key={role} value={role}>
               {role}
@@ -129,8 +156,12 @@ export default function UsersPage() {
           ))}
         </FilterSelect>
 
-        <FilterSelect value={positionFilter} onChange={setPositionFilter}>
+        <FilterSelect
+          value={positionFilter}
+          onChange={setPositionFilter}
+        >
           <option value="All">Position: All</option>
+
           {positionOptions.map((position) => (
             <option key={position} value={position}>
               {position}
@@ -140,10 +171,12 @@ export default function UsersPage() {
 
         <CreateUserDialog
           trigger={
-            <Button className="h-10 gap-2 rounded-full bg-[#242424] px-5 text-[13px] hover:bg-[#333333]">
-              <Plus className="h-4 w-4" />
-              New Agent
-            </Button>
+            <Can permission="create-users">
+              <Button className="gap-2">
+                <Plus size={18} />
+                New User
+              </Button>
+            </Can>
           }
         />
       </div>
