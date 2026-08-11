@@ -7,6 +7,11 @@ export type UnitProject = {
   location?: string | null;
 };
 
+export type UnitPhoto = {
+  id: number;
+  url: string;
+};
+
 export type Unit = {
   id: number;
   code: string;
@@ -16,6 +21,8 @@ export type Unit = {
   status: UnitStatus;
   project_id: number;
   project: UnitProject | null;
+  photos?: UnitPhoto[];
+  floor_plans?: UnitPhoto[];
   created_at: string;
   updated_at: string;
 };

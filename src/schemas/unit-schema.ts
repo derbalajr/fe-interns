@@ -18,11 +18,20 @@ export const unitSchema = z.object({
     .min(1, "Type is required")
     .max(100, "Type is too long"),
 
-  area: z.coerce.number().gt(0, "Area must be greater than 0"),
+  area: z.coerce
+    .number()
+    .gt(0, "Area must be greater than 0"),
 
-  price: z.coerce.number().gt(0, "Price must be greater than 0"),
-  });
+  price: z.coerce
+    .number()
+    .gt(0, "Price must be greater than 0"),
 
-// Raw form values (before coercion) vs. the validated/coerced payload.
+  status: z.enum([
+    "available",
+    "reserved",
+    "sold",
+  ]),
+});
+
 export type UnitFormValues = z.input<typeof unitSchema>;
 export type UnitPayload = z.output<typeof unitSchema>;

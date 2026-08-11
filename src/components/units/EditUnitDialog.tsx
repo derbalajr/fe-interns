@@ -9,37 +9,36 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import type { Unit } from "@/types/unit";
+
 import { UnitForm } from "./UnitForm";
 
-type CreateUnitDialogProps = {
+type EditUnitDialogProps = {
   trigger: ReactElement;
-  defaultProjectId?: number;
-  lockProject?: boolean;
+  unit: Unit;
 };
 
-export function CreateUnitDialog({
+export function EditUnitDialog({
   trigger,
-  defaultProjectId,
-  lockProject,
-}: CreateUnitDialogProps) {
+  unit,
+}: EditUnitDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
 
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create Unit</DialogTitle>
+          <DialogTitle>Edit Unit</DialogTitle>
           <DialogDescription>
-            Add a new unit to a project.
+            Update this unit and manage its photos.
           </DialogDescription>
         </DialogHeader>
 
         <UnitForm
-          mode="create"
-          defaultProjectId={defaultProjectId}
-          lockProject={lockProject}
+          mode="edit"
+          unit={unit}
           onSuccess={() => setOpen(false)}
         />
       </DialogContent>
