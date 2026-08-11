@@ -20,8 +20,8 @@ export const unitSchema = z.object({
 
   area: z.coerce.number().gt(0, "Area must be greater than 0"),
 
-  price: z.coerce.number().min(0, "Price must be 0 or more"),
-});
+  price: z.coerce.number().gt(0, "Price must be greater than 0"),
+  });
 
 // Raw form values (before coercion) vs. the validated/coerced payload.
 export type UnitFormValues = z.input<typeof unitSchema>;
