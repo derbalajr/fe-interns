@@ -1,6 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ImagePlus, X } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -10,12 +10,14 @@ import { ApiError } from "@/lib/fetcher";
 import { useCreateUnitMutation } from "@/hooks/use-create-unit-mutation";
 import { useUpdateUnitMutation } from "@/hooks/use-update-units-mutation";
 import { useProjectsQuery } from "@/hooks/use-projects-query";
+
 import {
   unitSchema,
   type UnitFormValues,
   type UnitPayload,
 } from "@/schemas/unit-schema";
-import type { Unit, UnitPhoto } from "@/types/unit";
+
+import type { Unit } from "@/types/unit";
 
 const UNIT_TYPES = [
   "Apartment",
@@ -28,8 +30,12 @@ const UNIT_TYPES = [
 const fieldClassName =
   "h-10 w-full rounded-lg border border-[#e2e2e2] bg-white px-3 text-sm outline-none transition focus:border-[#cccccc]";
 
+type ExistingPhoto = {
+  id: number;
+  url: string;
+};
+
 type NewPhoto = {
-  id: string;
   file: File;
   preview: string;
 };
@@ -57,13 +63,12 @@ export function UnitForm({
   const projectsQuery = useProjectsQuery();
   const projects = projectsQuery.data?.data ?? [];
 
+  const [existingPhotos, setExistingPhotos] = useState<ExistingPhoto[]>([]);
+  const [newPhotos, setNewPhotos] = useState<NewPhoto[]>([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [existingPhotos, setExistingPhotos] = useState<UnitPhoto[]>(
-    unit?.photos ?? [],
-  );
-
-  const [newPhotos, setNewPhotos] = useState<NewPhoto[]>([]);
+  const mutation = isEdit ? updateMutation : createMutation;
 
   const {
     register,
@@ -77,30 +82,46 @@ export function UnitForm({
       project_id: unit?.project_id ?? defaultProjectId ?? "",
       code: unit?.code ?? "",
       type: unit?.type ?? "",
-      area: unit?.area ?? "",
-      price: unit?.price ?? "",
+      area: unit?.area != null ? String(unit.area) : "",
+      price: unit?.price != null ? String(unit.price) : "",
     },
   });
 
+  /*
+   * When editing, load the unit's existing photos.
+   */
   useEffect(() => {
-    if (!isEdit || !unit) {
-      return;
+    if (isEdit && unit) {
+      setExistingPhotos(
+        unit.photos?.map((photo) => ({
+          id: photo.id,
+          url: photo.url,
+        })) ?? [],
+      );
+
+      reset({
+        project_id: unit.project_id,
+        code: unit.code,
+        type: unit.type,
+        area: String(unit.area),
+        price: String(unit.price),
+      });
     }
-
-    reset({
-      project_id: unit.project_id,
-      code: unit.code,
-      type: unit.type,
-      area: unit.area,
-      price: unit.price,
-    });
-
-    setExistingPhotos(unit.photos ?? []);
-    setNewPhotos([]);
   }, [isEdit, unit, reset]);
 
   /*
-   * Add selected files and create local previews.
+   * Clean up object URLs when the component is unmounted.
+   */
+  useEffect(() => {
+    return () => {
+      newPhotos.forEach((photo) => {
+        URL.revokeObjectURL(photo.preview);
+      });
+    };
+  }, [newPhotos]);
+
+  /*
+   * Handle selecting photos.
    */
   const handlePhotoChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -111,38 +132,57 @@ export function UnitForm({
       return;
     }
 
-    const photos = files.map((file) => ({
-      id: `${file.name}-${file.lastModified}-${Math.random()}`,
-      file,
-      preview: URL.createObjectURL(file),
-    }));
+    const validFiles: NewPhoto[] = [];
 
-    setNewPhotos((current) => [...current, ...photos]);
+    for (const file of files) {
+      const isImage = file.type.startsWith("image/");
 
-    // Allow selecting the same file again later.
+      if (!isImage) {
+        toast.error(`${file.name} is not an image.`);
+        continue;
+      }
+
+      const maxSize = 5 * 1024 * 1024;
+
+      if (file.size > maxSize) {
+        toast.error(`${file.name} is larger than 5MB.`);
+        continue;
+      }
+
+      validFiles.push({
+        file,
+        preview: URL.createObjectURL(file),
+      });
+    }
+
+    setNewPhotos((current) => [...current, ...validFiles]);
+
+    /*
+     * Reset the input so selecting the same file again works.
+     */
     event.target.value = "";
   };
 
   /*
-   * Remove a new photo before submitting.
+   * Remove a newly selected photo.
    */
-  const removeNewPhoto = (id: string) => {
+  const removeNewPhoto = (index: number) => {
     setNewPhotos((current) => {
-      const photo = current.find((item) => item.id === id);
+      const photo = current[index];
 
       if (photo) {
         URL.revokeObjectURL(photo.preview);
       }
 
-      return current.filter((item) => item.id !== id);
+      return current.filter((_, photoIndex) => photoIndex !== index);
     });
   };
 
   /*
-   * Remove an existing photo from the list.
+   * Remove an existing photo from the edit form.
    *
-   * The backend will see that its ID was not sent
-   * and delete the media record + physical file.
+   * We don't delete it immediately from the backend.
+   * We simply remove it from the list that will be submitted.
    */
   const removeExistingPhoto = (id: number) => {
     setExistingPhotos((current) =>
@@ -150,14 +190,17 @@ export function UnitForm({
     );
   };
 
+  /*
+   * Submit create/edit request.
+   */
   const onSubmit = handleSubmit(async (values) => {
     try {
-      /*
-       * EDIT
-       */
-      if (isEdit && unit) {
-        const formData = new FormData();
+      const formData = new FormData();
 
+      /*
+       * CREATE
+       */
+      if (!isEdit) {
         formData.append(
           "project_id",
           String(values.project_id),
@@ -169,59 +212,46 @@ export function UnitForm({
         formData.append("price", String(values.price));
 
         /*
-         * Existing photos that were kept.
+         * Laravel StoreUnitRequest expects:
+         *
+         * photos[]
          */
-        existingPhotos.forEach((photo, index) => {
-          formData.append(
-            `media[${index}][id]`,
-            String(photo.id),
-          );
-
-          formData.append(
-            `media[${index}][type]`,
-            "photo",
-          );
+        newPhotos.forEach((photo) => {
+          formData.append("photos[]", photo.file);
         });
 
-        /*
-         * New photos.
-         */
-        newPhotos.forEach((photo, index) => {
-          const mediaIndex = existingPhotos.length + index;
+        await createMutation.mutateAsync(formData);
 
-          formData.append(
-            `media[${mediaIndex}][type]`,
-            "photo",
-          );
-
-          formData.append(
-            `media[${mediaIndex}][file]`,
-            photo.file,
-          );
-        });
-
-        await updateMutation.mutateAsync({
-          id: unit.id,
-          data: formData,
-        });
-
-        toast.success("Unit updated");
+        toast.success("Unit created");
 
         newPhotos.forEach((photo) => {
           URL.revokeObjectURL(photo.preview);
         });
 
+        setNewPhotos([]);
+        reset();
+
         onSuccess();
+
         return;
       }
 
       /*
-       * CREATE
-       *
-       * Your existing create endpoint already supports
-       * photos, so we send FormData here too.
+       * EDIT
        */
-      const formData = new FormData();
+      if (!unit) {
+        toast.error("Unit information is missing.");
+        return;
+      }
+
+      /*
+       * Laravel method spoofing.
+       *
+       * We send POST multipart/form-data with _method=PUT
+       * because this allows Laravel/PHP to properly receive
+       * uploaded files.
+       */
+      formData.append("_method", "PUT");
 
       formData.append(
         "project_id",
@@ -233,38 +263,80 @@ export function UnitForm({
       formData.append("area", String(values.area));
       formData.append("price", String(values.price));
 
-      newPhotos.forEach((photo) => {
-        formData.append("photos[]", photo.file);
+      /*
+       * Tell the backend which existing media we are keeping.
+       */
+      existingPhotos.forEach((photo, index) => {
+        formData.append(
+          `media[${index}][id]`,
+          String(photo.id),
+        );
+
+        formData.append(
+          `media[${index}][type]`,
+          "photo",
+        );
       });
 
-      await createMutation.mutateAsync(
-        formData as unknown as UnitPayload,
-      );
+      /*
+       * Add newly uploaded photos.
+       *
+       * Example:
+       * media[2][type] = photo
+       * media[2][file] = actual image
+       */
+      newPhotos.forEach((photo, index) => {
+        const mediaIndex = existingPhotos.length + index;
 
-      toast.success("Unit created");
+        formData.append(
+          `media[${mediaIndex}][type]`,
+          "photo",
+        );
+
+        formData.append(
+          `media[${mediaIndex}][file]`,
+          photo.file,
+        );
+      });
+
+      await updateMutation.mutateAsync({
+        id: unit.id,
+        data: formData,
+      });
+
+      toast.success("Unit updated");
 
       newPhotos.forEach((photo) => {
         URL.revokeObjectURL(photo.preview);
       });
 
       setNewPhotos([]);
-      reset();
 
       onSuccess();
     } catch (error) {
-      toast.error(
-        error instanceof ApiError
-          ? error.message
-          : isEdit
+      if (error instanceof ApiError) {
+        /*
+         * Show Laravel validation errors if available.
+         */
+        if (error.errors) {
+          const firstError = Object.values(error.errors)
+            .flat()[0];
+
+          toast.error(firstError ?? error.message);
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.error(
+          isEdit
             ? "Could not update the unit"
             : "Could not create the unit",
-      );
+        );
+      }
     }
   });
 
-  const isPending =
-    createMutation.isPending ||
-    updateMutation.isPending;
+  const isPending = mutation.isPending;
 
   return (
     <form
@@ -284,11 +356,13 @@ export function UnitForm({
         <select
           id="unit-project"
           className={fieldClassName}
-          disabled={lockProject || isPending}
+          disabled={lockProject || projectsQuery.isLoading}
           {...register("project_id")}
         >
           <option value="">
-            Select a project…
+            {projectsQuery.isLoading
+              ? "Loading projects…"
+              : "Select a project…"}
           </option>
 
           {projects.map((project) => (
@@ -300,6 +374,12 @@ export function UnitForm({
             </option>
           ))}
         </select>
+
+        {projectsQuery.isError && (
+          <p className="mt-1 text-sm text-red-500">
+            Could not load projects.
+          </p>
+        )}
 
         {errors.project_id && (
           <p className="mt-1 text-sm text-red-500">
@@ -321,7 +401,6 @@ export function UnitForm({
           <Input
             id="unit-code"
             placeholder="V204"
-            disabled={isPending}
             {...register("code")}
           />
 
@@ -343,7 +422,6 @@ export function UnitForm({
           <select
             id="unit-type"
             className={fieldClassName}
-            disabled={isPending}
             {...register("type")}
           >
             <option value="">
@@ -351,7 +429,10 @@ export function UnitForm({
             </option>
 
             {UNIT_TYPES.map((type) => (
-              <option key={type} value={type}>
+              <option
+                key={type}
+                value={type}
+              >
                 {type}
               </option>
             ))}
@@ -380,7 +461,6 @@ export function UnitForm({
             type="number"
             step="0.01"
             placeholder="320"
-            disabled={isPending}
             {...register("area")}
           />
 
@@ -404,7 +484,6 @@ export function UnitForm({
             type="number"
             step="0.01"
             placeholder="14200000"
-            disabled={isPending}
             {...register("price")}
           />
 
@@ -423,8 +502,8 @@ export function UnitForm({
             Photos
           </label>
 
-          <span className="text-xs text-[#888888]">
-            JPG, PNG, WEBP
+          <span className="text-xs text-[#999999]">
+            JPG, PNG, WEBP · Max 5MB
           </span>
         </div>
 
@@ -439,21 +518,20 @@ export function UnitForm({
 
         <button
           type="button"
-          disabled={isPending}
           onClick={() => fileInputRef.current?.click()}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#d8d8d8] px-4 py-5 text-sm text-[#666666] transition hover:border-[#aaaaaa] hover:bg-[#fafafa] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#d8d8d8] px-4 py-6 text-sm text-[#777777] transition hover:border-[#aaaaaa] hover:bg-[#fafafa]"
         >
           <ImagePlus className="h-5 w-5" />
           Add photos
         </button>
 
-        {(existingPhotos.length > 0 || newPhotos.length > 0) && (
-          <div className="mt-3 grid grid-cols-3 gap-3">
-            {/* Existing photos */}
+        {/* Existing photos */}
+        {existingPhotos.length > 0 && (
+          <div className="mt-3 grid grid-cols-4 gap-3">
             {existingPhotos.map((photo) => (
               <div
-                key={`existing-${photo.id}`}
-                className="group relative overflow-hidden rounded-xl border border-[#e5e5e5]"
+                key={photo.id}
+                className="group relative overflow-hidden rounded-xl"
               >
                 <img
                   src={photo.url}
@@ -463,36 +541,40 @@ export function UnitForm({
 
                 <button
                   type="button"
-                  disabled={isPending}
                   onClick={() =>
                     removeExistingPhoto(photo.id)
                   }
-                  className="absolute right-1.5 top-1.5 rounded-full bg-black/70 p-1 text-white opacity-0 transition group-hover:opacity-100"
+                  className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white opacity-0 transition group-hover:opacity-100"
+                  aria-label="Remove photo"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             ))}
+          </div>
+        )}
 
-            {/* New photos */}
-            {newPhotos.map((photo) => (
+        {/* New photos */}
+        {newPhotos.length > 0 && (
+          <div className="mt-3 grid grid-cols-4 gap-3">
+            {newPhotos.map((photo, index) => (
               <div
-                key={photo.id}
-                className="group relative overflow-hidden rounded-xl border border-[#e5e5e5]"
+                key={photo.preview}
+                className="group relative overflow-hidden rounded-xl"
               >
                 <img
                   src={photo.preview}
-                  alt={photo.file.name}
+                  alt={`New photo ${index + 1}`}
                   className="aspect-square w-full object-cover"
                 />
 
                 <button
                   type="button"
-                  disabled={isPending}
-                  onClick={() => removeNewPhoto(photo.id)}
-                  className="absolute right-1.5 top-1.5 rounded-full bg-black/70 p-1 text-white opacity-0 transition group-hover:opacity-100"
+                  onClick={() => removeNewPhoto(index)}
+                  className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white opacity-0 transition group-hover:opacity-100"
+                  aria-label="Remove photo"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             ))}

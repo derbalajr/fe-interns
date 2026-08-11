@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-// `status` is intentionally absent: the backend prohibits it on create and
-// defaults new units to "available". Media is not collected here either.
+// The backend does not accept a status field here; it sets a default value for
+// new units and updates status separately. Media is handled in the form as a
+// multipart upload payload.
 export const unitSchema = z.object({
   project_id: z.coerce
     .number()
@@ -25,12 +26,6 @@ export const unitSchema = z.object({
   price: z.coerce
     .number()
     .gt(0, "Price must be greater than 0"),
-
-  status: z.enum([
-    "available",
-    "reserved",
-    "sold",
-  ]),
 });
 
 export type UnitFormValues = z.input<typeof unitSchema>;
