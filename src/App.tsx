@@ -9,6 +9,11 @@ import { TenantRoute } from "@/components/TenantRoute";
 import { CustomersPage } from "@/pages/CustomersPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import DealsPage from "@/pages/DealsPage";
+import { IntelChatPage } from "@/pages/IntelChatPage";
+import { IntelProjectDetailPage } from "@/pages/IntelProjectDetailPage";
+import { IntelProjectsPage } from "@/pages/IntelProjectsPage";
+import { LaunchFeedPage } from "@/pages/LaunchFeedPage";
+import { LaunchIntelligencePage } from "@/pages/LaunchIntelligencePage";
 import { LeadDetailsPage } from "@/pages/LeadDetailsPage";
 import LeadsPage from "@/pages/LeadsPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -65,6 +70,51 @@ function App() {
           <Route path="customers" element={<CustomersPage />} />
 
           {/* MARQ */}
+          <Route
+            path="insights"
+            element={
+              <TenantRoute allowedTenant="marq">
+                <LaunchIntelligencePage />
+              </TenantRoute>
+            }
+          />
+
+          <Route
+            path="insights/feed"
+            element={
+              <TenantRoute allowedTenant="marq">
+                <LaunchFeedPage />
+              </TenantRoute>
+            }
+          />
+
+          <Route
+            path="insights/projects"
+            element={
+              <TenantRoute allowedTenant="marq">
+                <IntelProjectsPage />
+              </TenantRoute>
+            }
+          />
+
+          <Route
+            path="insights/projects/:projectId"
+            element={
+              <TenantRoute allowedTenant="marq">
+                <IntelProjectDetailPage />
+              </TenantRoute>
+            }
+          />
+
+          <Route
+            path="insights/chat"
+            element={
+              <TenantRoute allowedTenant="marq">
+                <IntelChatPage />
+              </TenantRoute>
+            }
+          />
+
           <Route
             path="reservations"
             element={

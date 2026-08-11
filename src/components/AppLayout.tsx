@@ -7,6 +7,7 @@ import {
   Grid2X2,
   HelpCircle,
   LayoutDashboard,
+  LineChart,
   LogOut,
   MessageSquareText,
   Moon,
@@ -31,6 +32,7 @@ import { useTenant } from "@/hooks/use-tenant";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
+  Insights: LineChart,
   Leads: Target,
   Deals: BriefcaseBusiness,
   Customers: Users,
