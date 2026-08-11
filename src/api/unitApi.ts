@@ -1,5 +1,6 @@
-import { apiGet } from "@/lib/fetcher";
+import { apiGet, apiPost } from "@/lib/fetcher";
 
+import type { UnitPayload } from "@/schemas/unit-schema";
 import type { UnitResponse, UnitsResponse } from "@/types/unit";
 
 const PER_PAGE = 100;
@@ -60,4 +61,8 @@ export function getUnits({
 
 export function getUnit(id: number | string) {
   return apiGet<UnitResponse>(`/units/${id}`);
+}
+
+export function createUnit(data: UnitPayload) {
+  return apiPost<UnitResponse, UnitPayload>("/units", data);
 }

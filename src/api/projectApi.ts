@@ -1,5 +1,6 @@
-import { apiGet } from "@/lib/fetcher";
+import { apiGet, apiPost } from "@/lib/fetcher";
 
+import type { ProjectPayload } from "@/schemas/project-schema";
 import type { ProjectResponse, ProjectsResponse } from "@/types/project";
 
 const PER_PAGE = 100;
@@ -15,4 +16,8 @@ export function getProjects(page = 1) {
 
 export function getProject(id: number | string) {
   return apiGet<ProjectResponse>(`/projects/${id}`);
+}
+
+export function createProject(data: ProjectPayload) {
+  return apiPost<ProjectResponse, ProjectPayload>("/projects", data);
 }

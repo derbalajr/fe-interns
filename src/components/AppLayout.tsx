@@ -36,7 +36,7 @@ const iconMap = {
   Customers: Users,
   Reservations: CalendarDays,
   Projects: Building2,
-  Inventory: Building2,
+  Units: Grid2X2,
   Users: ShieldCheck,
 };
 

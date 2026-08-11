@@ -32,9 +32,15 @@ export const APP_MODULES: AppModule[] = [
     tenants: ["marq"],
   },
   {
-    label: "Inventory",
+    label: "Projects",
     path: "/projects",
     permission: "view-projects",
+    tenants: ["marq"],
+  },
+  {
+    label: "Units",
+    path: "/units",
+    permission: "view-units",
     tenants: ["marq"],
   },
   {
