@@ -9,12 +9,6 @@ const TABS = [
   { label: "Overview", to: "/insights", end: true, icon: BarChart3 },
   { label: "Change feed", to: "/insights/feed", end: false, icon: TrendingUp },
   { label: "Projects", to: "/insights/projects", end: false, icon: Search },
-  {
-    label: "Assistant",
-    to: "/insights/chat",
-    end: false,
-    icon: MessageSquareText,
-  },
 ] as const;
 
 export function IntelTabs() {

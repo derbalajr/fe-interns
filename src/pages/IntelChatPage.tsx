@@ -11,7 +11,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { SendHorizonal } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { IntelApiError, postChat } from "@/api/intelApi";
 import { IntelTabs } from "@/components/intel/IntelTabs";
@@ -21,16 +21,51 @@ type Turn = { role: "user" | "assistant"; text: string };
 
 const MAX_LEN = 2000;
 
+const CHAT_TURNS_KEY = "intel-chat-turns";
+const CHAT_CONVERSATION_KEY = "intel-chat-conversation-id";
+
+function readStoredChat<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function IntelChatPage() {
-  const [turns, setTurns] = useState<Turn[]>([]);
+  const [turns, setTurns] = useState<Turn[]>(() => {
+    return readStoredChat<Turn[]>(CHAT_TURNS_KEY) ?? [];
+  });
   const [input, setInput] = useState("");
-  const [conversationId, setConversationId] = useState<string | undefined>();
+  const [conversationId, setConversationId] = useState<string | undefined>(() => {
+    return readStoredChat<string>(CHAT_CONVERSATION_KEY) ?? undefined;
+  });
   const [agentDown, setAgentDown] = useState(false); // 503 → disable entry point.
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(CHAT_TURNS_KEY, JSON.stringify(turns));
+  }, [turns]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (conversationId) {
+      window.localStorage.setItem(CHAT_CONVERSATION_KEY, conversationId);
+    } else {
+      window.localStorage.removeItem(CHAT_CONVERSATION_KEY);
+    }
+  }, [conversationId]);
 
   const chat = useMutation({
     mutationFn: (message: string) => postChat(message, conversationId),
     onSuccess: (res) => {
+      // Clear the shared "agent down" flag when the agent responds successfully
+      try {
+        if (typeof window !== "undefined") window.localStorage.removeItem("intel-agent-down");
+      } catch {}
       setConversationId(res.conversation_id);
       setTurns((t) => [...t, { role: "assistant", text: res.reply }]);
       scrollToEnd();
@@ -40,6 +75,13 @@ export function IntelChatPage() {
       let text: string;
       if (status === 503) {
         setAgentDown(true);
+        // Mark globally that the intel assistant is down so the main chatbot can
+        // react (we want the site chatbot to be disabled rather than the
+        // onboarding assistant).
+        try {
+          if (typeof window !== "undefined")
+            window.localStorage.setItem("intel-agent-down", "1");
+        } catch {}
         text = "The assistant is currently unavailable. Please try again later.";
       } else if (status === 504) {
         text =

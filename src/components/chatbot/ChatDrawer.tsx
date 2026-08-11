@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, Send, Sparkles, User, X } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 
-import { streamChat } from "@/api/chat-agent";
-import type { FloorMap } from "@/types/chat-agent";
+import { IntelApiError, postChat } from "@/api/intelApi";
 
 type ChatDrawerProps = {
   open: boolean;
@@ -13,14 +13,16 @@ type Message = {
   id: string;
   role: "assistant" | "user";
   content: string;
-  floorMap?: FloorMap;
 };
 
+const CHAT_TURNS_KEY = "intel-chat-turns";
+const CHAT_CONVERSATION_KEY = "intel-chat-conversation-id";
+
 const suggestedPrompts = [
-  "Show today's deals",
-  "Create a new lead",
-  "Summarize my pipeline",
-  "What follow-ups are overdue?",
+  "What are the hottest market zones right now?",
+  "Show recent launch activity",
+  "What is the price trend in New Cairo?",
+  "Summarize tomorrow's market news",
 ];
 
 function newId(): string {
@@ -29,11 +31,28 @@ function newId(): string {
     : `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
 }
 
+function readStoredChat<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() =>
+    readStoredChat<Message[]>(CHAT_TURNS_KEY) ?? [],
+  );
   const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [zoomedMap, setZoomedMap] = useState<FloorMap | null>(null);
+  const [conversationId, setConversationId] = useState<string | undefined>(() =>
+    readStoredChat<string>(CHAT_CONVERSATION_KEY) ?? undefined,
+  );
+  const [intelAgentDown, setIntelAgentDown] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return Boolean(window.localStorage.getItem("intel-agent-down"));
+  });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -48,64 +67,91 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
 
-  const sendMessage = async (text?: string) => {
-    const value = (text ?? input).trim();
-    if (!value || isStreaming) return;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(CHAT_TURNS_KEY, JSON.stringify(messages));
+  }, [messages]);
 
-    const assistantId = newId();
-    setMessages((prev) => [
-      ...prev,
-      { id: newId(), role: "user", content: value },
-      { id: assistantId, role: "assistant", content: "" },
-    ]);
-    setInput("");
-    setIsStreaming(true);
-
-    try {
-      await streamChat(value, {
-        onToken: (content) =>
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId ? { ...m, content: m.content + content } : m,
-            ),
-          ),
-        onFloorMap: (map: FloorMap) =>
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId ? { ...m, floorMap: map } : m,
-            ),
-          ),
-      });
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Sorry, something went wrong. Please try again.";
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId ? { ...m, content: m.content || message } : m,
-        ),
-      );
-    } finally {
-      setIsStreaming(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (conversationId) {
+      window.localStorage.setItem(CHAT_CONVERSATION_KEY, conversationId);
+    } else {
+      window.localStorage.removeItem(CHAT_CONVERSATION_KEY);
     }
+  }, [conversationId]);
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "intel-agent-down") {
+        setIntelAgentDown(Boolean(e.newValue));
+      }
+    };
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const chat = useMutation({
+    mutationFn: (message: string) => postChat(message, conversationId),
+    onSuccess: (res) => {
+      try {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("intel-agent-down");
+        }
+      } catch {
+        /* ignore */
+      }
+      setConversationId(res.conversation_id);
+      setMessages((prev) => [...prev, { id: newId(), role: "assistant", content: res.reply }]);
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+      });
+    },
+    onError: (err) => {
+      const status = err instanceof IntelApiError ? err.status : 0;
+      const assistantMessage =
+        status === 503
+          ? "The assistant is currently unavailable. Please try again later."
+          : status === 504
+          ? "That question took too long. Try narrowing the request."
+          : status === 502
+          ? "The assistant hit an error. Please try again."
+          : "Something went wrong reaching the assistant. Please try again.";
+
+      if (status === 503) {
+        setIntelAgentDown(true);
+        try {
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem("intel-agent-down", "1");
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+
+      setMessages((prev) => [...prev, { id: newId(), role: "assistant", content: assistantMessage }]);
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+      });
+    },
+  });
+
+  const sendMessage = (text?: string) => {
+    const value = (text ?? input).trim();
+    if (!value || chat.isPending || intelAgentDown) return;
+
+    setMessages((prev) => [...prev, { id: newId(), role: "user", content: value }]);
+    setInput("");
+    chat.mutate(value);
   };
 
   return (
     <>
-      {/* Overlay */}
-      <div
-        onClick={onClose}
-        className={`fixed inset-0 z-[90] bg-black/20 backdrop-blur-[2px] transition-all duration-300 ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      />
-
-      {/* Drawer */}
       <aside
-        className={`fixed right-4 top-4 bottom-4 z-[100] flex w-[420px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-transform duration-300 ${
+        className={`fixed right-4 top-4 bottom-4 z-[100] flex w-[min(95vw,560px)] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-[110%]"
-        }`}
+        } max-h-[calc(100vh-2rem)]`}
       >
         {/* Header */}
         <header className="flex h-[72px] items-center justify-between border-b border-[#efefef] px-6">
@@ -115,8 +161,8 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
             </div>
 
             <div>
-              <h2 className="font-semibold text-[#202020]">Ask Keystone</h2>
-              <p className="text-xs text-[#777]">AI CRM Assistant</p>
+              <h2 className="font-semibold text-[#202020]">Ask the market</h2>
+              <p className="text-xs text-[#777]">Market intelligence assistant</p>
             </div>
           </div>
 
@@ -130,7 +176,12 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
 
         {/* Content */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-5">
+          <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
+            {intelAgentDown && (
+              <div className="mb-4 rounded-lg bg-amber-50 px-4 py-2 text-sm text-amber-800">
+                The market assistant is currently unavailable. Please try again later.
+              </div>
+            )}
             {messages.length === 0 ? (
               <>
                 <div className="mt-8 text-center">
@@ -157,7 +208,10 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
                       <button
                         key={prompt}
                         onClick={() => sendMessage(prompt)}
-                        className="w-full rounded-2xl border border-[#ececec] p-4 text-left text-sm transition hover:border-[#d6d6d6] hover:bg-[#fafafa]"
+                        disabled={intelAgentDown}
+                        className={`w-full rounded-2xl border border-[#ececec] p-4 text-left text-sm transition hover:border-[#d6d6d6] hover:bg-[#fafafa] ${
+                          intelAgentDown ? "opacity-50 pointer-events-none" : ""
+                        }`}
                       >
                         {prompt}
                       </button>
@@ -194,23 +248,6 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
                             : "bg-[#1c2541] text-white"
                         }`}
                       >
-                        {message.floorMap && (
-                          <button
-                            type="button"
-                            onClick={() => setZoomedMap(message.floorMap!)}
-                            title="Click to enlarge"
-                            className="group relative block w-full overflow-hidden rounded-lg border border-[#e5e5e5] bg-white"
-                          >
-                            <img
-                              src={message.floorMap.url}
-                              alt={`Route to ${message.floorMap.destination}`}
-                              className="w-full transition group-hover:opacity-90"
-                            />
-                            <span className="absolute bottom-1 right-1 rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-0 transition group-hover:opacity-100">
-                              Click to enlarge
-                            </span>
-                          </button>
-                        )}
                         {message.content ? (
                           <p className="whitespace-pre-wrap">
                             {message.content}
@@ -234,20 +271,22 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
               <input
                 ref={inputRef}
                 value={input}
-                disabled={isStreaming}
+                disabled={chat.isPending || intelAgentDown}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     sendMessage();
                   }
                 }}
-                placeholder={isStreaming ? "Thinking..." : "Ask Keystone..."}
+                placeholder={
+                  intelAgentDown ? "Assistant offline" : chat.isPending ? "Thinking..." : "Ask the market..."
+                }
                 className="flex-1 bg-transparent text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
               />
 
               <button
                 onClick={() => sendMessage()}
-                disabled={isStreaming || !input.trim()}
+                disabled={chat.isPending || !input.trim() || intelAgentDown}
                 className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1c2541] text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={16} />
@@ -256,51 +295,6 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
           </div>
         </div>
       </aside>
-
-      {/* Floor-map lightbox */}
-      {zoomedMap && (
-        <div
-          onClick={() => setZoomedMap(null)}
-          className="fixed inset-0 z-[110] flex flex-col items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
-          >
-            <div className="flex items-center justify-between border-b border-[#efefef] px-5 py-3">
-              <div>
-                <p className="text-sm font-semibold capitalize text-[#202020]">
-                  {zoomedMap.destination}
-                </p>
-                <p className="text-xs text-[#777]">{zoomedMap.route}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={zoomedMap.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#8d7550] transition hover:bg-[#f5f5f5]"
-                >
-                  Open in new tab
-                </a>
-                <button
-                  onClick={() => setZoomedMap(null)}
-                  className="rounded-lg p-2 transition hover:bg-[#f5f5f5]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-            <div className="overflow-auto p-4">
-              <img
-                src={zoomedMap.url}
-                alt={`Route to ${zoomedMap.destination}`}
-                className="mx-auto max-w-full"
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

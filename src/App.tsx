@@ -9,7 +9,6 @@ import { TenantRoute } from "@/components/TenantRoute";
 import { CustomersPage } from "@/pages/CustomersPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import DealsPage from "@/pages/DealsPage";
-import { IntelChatPage } from "@/pages/IntelChatPage";
 import { IntelProjectDetailPage } from "@/pages/IntelProjectDetailPage";
 import { IntelProjectsPage } from "@/pages/IntelProjectsPage";
 import { LaunchFeedPage } from "@/pages/LaunchFeedPage";
@@ -102,15 +101,6 @@ function App() {
             element={
               <TenantRoute allowedTenant="marq">
                 <IntelProjectDetailPage />
-              </TenantRoute>
-            }
-          />
-
-          <Route
-            path="insights/chat"
-            element={
-              <TenantRoute allowedTenant="marq">
-                <IntelChatPage />
               </TenantRoute>
             }
           />

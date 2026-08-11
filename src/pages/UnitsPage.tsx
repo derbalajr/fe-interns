@@ -11,12 +11,15 @@ import { Button } from "@/components/ui/button";
 import type { UnitSort } from "@/api/unitApi";
 import { PRICE_RANGES, type PriceRangeKey } from "@/lib/unit-filters";
 import { useCan } from "@/hooks/use-can";
+import { useProjectQuery } from "@/hooks/use-project-query";
+import { useProjectsQuery } from "@/hooks/use-projects-query";
 import { useUnitsQuery } from "@/hooks/use-units-query";
 
 export function UnitsPage() {
   const navigate = useNavigate();
   const { can } = useCan();
 
+  const [projectId, setProjectId] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
   const [priceRange, setPriceRange] = useState<PriceRangeKey>("any");
@@ -24,22 +27,28 @@ export function UnitsPage() {
 
   const { minPrice, maxPrice } = PRICE_RANGES[priceRange];
 
+  const selectedProjectId = projectId ? Number(projectId) : undefined;
+
   const unitsQuery = useUnitsQuery({
     type: type || undefined,
     status: status || undefined,
     minPrice,
     maxPrice,
     sort,
+    projectId: selectedProjectId,
   });
 
-  // Unfiltered fetch for stable Type options.
+  // Unfiltered fetch for stable Type and Project options.
   const allUnitsQuery = useUnitsQuery();
+  const projectsQuery = useProjectsQuery();
 
   // Re-apply filters client-side so they work even before backend PR #29 is
   // deployed; idempotent once it is.
   const units = useMemo(() => {
     let rows = unitsQuery.data?.data ?? [];
 
+    if (projectId)
+      rows = rows.filter((unit) => unit.project_id === selectedProjectId);
     if (type) rows = rows.filter((unit) => unit.type === type);
     if (status) rows = rows.filter((unit) => unit.status === status);
     if (typeof minPrice === "number")
@@ -68,6 +77,13 @@ export function UnitsPage() {
     }
     return Array.from(types).sort();
   }, [allUnitsQuery.data?.data]);
+
+  const projectOptions = useMemo(() => {
+    const projects = projectsQuery.data?.data ?? [];
+    return [...projects].sort((first, second) =>
+      first.name.localeCompare(second.name),
+    );
+  }, [projectsQuery.data?.data]);
 
   const columns = useMemo(
     () => getUnitColumns((unit) => navigate(`/units/${unit.id}`)),
@@ -100,11 +116,14 @@ export function UnitsPage() {
 
       <div className="mb-6">
         <UnitsToolbar
+          projectId={projectId}
+          projectOptions={projectOptions}
           type={type}
           status={status}
           priceRange={priceRange}
           sort={sort}
           typeOptions={typeOptions}
+          onProjectChange={setProjectId}
           onTypeChange={setType}
           onStatusChange={setStatus}
           onPriceRangeChange={setPriceRange}

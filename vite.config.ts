@@ -15,4 +15,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/intel": {
+        target: "https://rnd.addressinv.com",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/intel/, ""),
+      },
+    },
+  },
 });

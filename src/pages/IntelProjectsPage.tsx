@@ -10,8 +10,9 @@ import { Link } from "react-router-dom";
 
 import { IntelTabs } from "@/components/intel/IntelTabs";
 import { PageHeader } from "@/components/PageHeader";
-import { useProjectsQuery } from "@/hooks/use-intel";
-import { fromPrice, sourceLabel } from "@/lib/intel-format";
+import { useProjectsQuery, useZonesQuery } from "@/hooks/use-intel";
+import { fromPrice, sourceLabel, SOURCE_LABEL } from "@/lib/intel-format";
+import type { Source } from "@/types/intel";
 
 const PAGE_SIZE = 25;
 
@@ -27,14 +28,27 @@ function useDebounced<T>(value: T, delay = 300): T {
 
 export function IntelProjectsPage() {
   const [query, setQuery] = useState("");
+  const [source, setSource] = useState<Source | "">("");
+  const [zone, setZone] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [offset, setOffset] = useState(0);
   const debouncedQuery = useDebounced(query, 300);
 
+  const priceMinValue = minPrice ? Number(minPrice) : undefined;
+  const priceMaxValue = maxPrice ? Number(maxPrice) : undefined;
+
   const projects = useProjectsQuery({
     q: debouncedQuery || undefined,
+    source: source || undefined,
+    zone: zone || undefined,
+    min_price: priceMinValue,
+    max_price: priceMaxValue,
     limit: PAGE_SIZE,
     offset,
   });
+
+  const zones = useZonesQuery(50);
 
   const data = projects.data;
   const rows = data?.results ?? [];
@@ -58,21 +72,98 @@ export function IntelProjectsPage() {
       />
 
       {/* Search box */}
-      <div className="relative max-w-md">
-        <Search
-          size={16}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-        />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOffset(0); // new search → back to the first page
-          }}
-          placeholder="Search projects by name…"
-          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-800 shadow-sm focus:border-[#8d7550] focus:outline-none"
-        />
+      <div className="grid gap-3 xl:grid-cols-[minmax(200px,360px)_repeat(3,minmax(160px,1fr))]">
+        <div className="relative">
+          <Search
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOffset(0);
+            }}
+            placeholder="Search projects by name…"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-800 shadow-sm focus:border-[#8d7550] focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-xs uppercase tracking-wide text-slate-500">
+            Source
+          </label>
+          <select
+            value={source}
+            onChange={(e) => {
+              setSource(e.target.value as Source | "");
+              setOffset(0);
+            }}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-[#8d7550] focus:outline-none"
+          >
+            <option value="">All sources</option>
+            {Object.entries(SOURCE_LABEL).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-xs uppercase tracking-wide text-slate-500">
+            Zone
+          </label>
+          <select
+            value={zone}
+            onChange={(e) => {
+              setZone(e.target.value);
+              setOffset(0);
+            }}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-[#8d7550] focus:outline-none"
+          >
+            <option value="">All zones</option>
+            {zones.data?.results
+              .slice()
+              .sort((a, b) => (a.zone ?? "").localeCompare(b.zone ?? ""))
+              .map((row) => (
+                <option key={row.zone ?? ""} value={row.zone ?? ""}>
+                  {row.zone}
+                </option>
+              ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-xs uppercase tracking-wide text-slate-500">
+            Price range
+          </label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <input
+              type="number"
+              min={0}
+              value={minPrice}
+              onChange={(e) => {
+                setMinPrice(e.target.value);
+                setOffset(0);
+              }}
+              placeholder="Min price"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-[#8d7550] focus:outline-none"
+            />
+            <input
+              type="number"
+              min={0}
+              value={maxPrice}
+              onChange={(e) => {
+                setMaxPrice(e.target.value);
+                setOffset(0);
+              }}
+              placeholder="Max price"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-[#8d7550] focus:outline-none"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
