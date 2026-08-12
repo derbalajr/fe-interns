@@ -1,16 +1,14 @@
 import { apiGet, apiPost } from "@/lib/fetcher";
 
-import type { UnitPayload } from "@/schemas/unit-schema";
 import type { UnitResponse, UnitsResponse } from "@/types/unit";
 
 const PER_PAGE = 100;
 
-/**
- * Server-side unit filters, mirroring the Laravel `FilterUnitRequest`
- * contract (see be-interns UnitController@index). `project_id` is NOT a
- * backend filter yet, so project scoping is applied on the client.
- */
-export type UnitSort = "newest" | "oldest" | "price_asc" | "price_desc";
+export type UnitSort =
+  | "newest"
+  | "oldest"
+  | "price_asc"
+  | "price_desc";
 
 export interface UnitFilters {
   page?: number;
@@ -51,19 +49,26 @@ export function getUnits({
     params.set("max_price", maxPrice.toString());
   }
 
-  // The backend defaults to "latest" (newest first), so only send an
-  // explicit sort when it differs from that default.
   if (sort && sort !== "newest") {
     params.set("sort", sort);
   }
 
-  return apiGet<UnitsResponse>(`/units?${params.toString()}`);
+  return apiGet<UnitsResponse>(
+    `/units?${params.toString()}`,
+  );
 }
 
 export function getUnit(id: number | string) {
   return apiGet<UnitResponse>(`/units/${id}`);
 }
 
-export function createUnit(data: UnitPayload) {
-  return apiPost<UnitResponse, UnitPayload>("/units", data);
+export function createUnit(data: FormData) {
+  return apiPost<UnitResponse, FormData>("/units", data);
+}
+
+export function updateUnit(id: number, data: FormData) {
+  return apiPost<UnitResponse, FormData>(
+    `/units/${id}`,
+    data,
+  );
 }

@@ -12,6 +12,8 @@ import { getUnitGallery } from "@/lib/unit-images";
 import { useCan } from "@/hooks/use-can";
 import { useUnitQuery } from "@/hooks/use-unit-query";
 import { formatUnitArea, getProjectName } from "@/utils/unit";
+import { Pencil } from "lucide-react";
+import { EditUnitDialog } from "@/components/units/EditUnitDialog";
 
 export function UnitDetailPage() {
   const navigate = useNavigate();
@@ -78,13 +80,30 @@ export function UnitDetailPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <UnitStatusBadge
-            status={unit.status}
-            className="px-3 py-1.5 text-xs"
-          />
+       <div className="flex items-center gap-3">
+        <UnitStatusBadge
+          status={unit.status}
+          className="px-3 py-1.5 text-xs"
+        />
 
-          {unit.status === "available" && can("create-reservations") && (
+  {can("edit-units") && (
+    <EditUnitDialog
+      unit={unit}
+      trigger={
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 gap-1.5 rounded-xl px-4"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit
+        </Button>
+      }
+    />
+  )}
+
+  {unit.status === "available" &&
+    can("create-reservations") && (
             <Button
               type="button"
               onClick={() => setIsReserveOpen(true)}
