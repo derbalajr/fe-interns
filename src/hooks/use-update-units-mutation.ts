@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { updateUnit } from "@/api/unitApi";
+import { unitQueryKey } from "@/hooks/use-unit-query";
+import { unitsQueryKey } from "@/hooks/use-units-query";
 
 export function useUpdateUnitMutation() {
   const queryClient = useQueryClient();
@@ -14,13 +16,13 @@ export function useUpdateUnitMutation() {
       data: FormData;
     }) => updateUnit(id, data),
 
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["unit", variables.id],
+    onSuccess: async (_, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: unitQueryKey(variables.id),
       });
 
-      queryClient.invalidateQueries({
-        queryKey: ["units"],
+      await queryClient.invalidateQueries({
+        queryKey: unitsQueryKey,
       });
     },
   });

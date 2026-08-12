@@ -81,10 +81,10 @@ export function UnitDetailPage() {
         </div>
 
        <div className="flex items-center gap-3">
-  <UnitStatusBadge
-    status={unit.status}
-    className="px-3 py-1.5 text-xs"
-  />
+        <UnitStatusBadge
+          status={unit.status}
+          className="px-3 py-1.5 text-xs"
+        />
 
   {can("edit-units") && (
     <EditUnitDialog

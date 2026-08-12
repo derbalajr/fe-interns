@@ -280,10 +280,6 @@ export function UnitForm({
 
       /*
        * Add newly uploaded photos.
-       *
-       * Example:
-       * media[2][type] = photo
-       * media[2][file] = actual image
        */
       newPhotos.forEach((photo, index) => {
         const mediaIndex = existingPhotos.length + index;
@@ -298,6 +294,26 @@ export function UnitForm({
           photo.file,
         );
       });
+
+      /*
+       * FRONTEND-ONLY FIX:
+       *
+       * If the user removed every existing photo and did not
+       * add a new one, make sure the `media` field is still
+       * present in the request.
+       *
+       * This allows the existing backend `has('media')`
+       * condition to run and remove the old media records.
+       */
+      if (
+        existingPhotos.length === 0 &&
+        newPhotos.length === 0
+      ) {
+        formData.append(
+          "media[0][type]",
+          "photo",
+        );
+      }
 
       await updateMutation.mutateAsync({
         id: unit.id,
@@ -356,7 +372,9 @@ export function UnitForm({
         <select
           id="unit-project"
           className={fieldClassName}
-          disabled={lockProject || projectsQuery.isLoading}
+          disabled={
+            lockProject || projectsQuery.isLoading
+          }
           {...register("project_id")}
         >
           <option value="">
