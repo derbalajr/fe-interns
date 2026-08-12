@@ -2,7 +2,7 @@
 // intel views grouped under one global "Insights" nav entry instead of
 // cluttering the top bar with four items.
 
-import { BarChart3, MessageSquareText, Search, TrendingUp } from "lucide-react";
+import { BarChart3, Search, TrendingUp } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const TABS = [
