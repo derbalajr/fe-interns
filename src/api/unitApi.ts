@@ -19,6 +19,7 @@ export interface UnitFilters {
   minPrice?: number;
   maxPrice?: number;
   sort?: UnitSort;
+  projectId?: number;
 }
 
 export function getUnits({

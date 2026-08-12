@@ -7,6 +7,7 @@ import {
   Grid2X2,
   HelpCircle,
   LayoutDashboard,
+  LineChart,
   LogOut,
   MessageSquareText,
   Moon,
@@ -23,7 +24,6 @@ import {
 } from "react-router-dom";
 
 import { ChatDrawer } from "@/components/chatbot/ChatDrawer";
-import { OnboardingChat } from "@/components/onboarding/OnboardingChat";
 import { APP_MODULES } from "@/constants/modules";
 import { useAuth } from "@/context/AuthContext";
 import { useCan } from "@/hooks/use-can";
@@ -31,6 +31,7 @@ import { useTenant } from "@/hooks/use-tenant";
 
 const iconMap = {
   Dashboard: LayoutDashboard,
+  Insights: LineChart,
   Leads: Target,
   Deals: BriefcaseBusiness,
   Customers: Users,
@@ -95,6 +96,12 @@ export function AppLayout() {
     await logout();
     navigate("/login", { replace: true });
   };
+
+  // The "Ask the market" assistant is powered by the Launch Intelligence API,
+  // which only exists for MarQ. Gate every entry point the same way the rest of
+  // the feature (routes, nav, dashboard) is gated so non-MarQ tenants don't get
+  // a broken/irrelevant assistant.
+  const isMarq = tenant.id === "marq";
 
   return (
     <>
@@ -173,14 +180,16 @@ export function AppLayout() {
                 <Bell className="h-4 w-4" />
               </button>
 
-              <button
-                type="button"
-                onClick={() => setIsChatOpen(true)}
-                className="hidden h-9 min-w-[155px] items-center gap-2 rounded-xl bg-[#efede8] px-4 text-xs font-medium text-[#77736b] transition hover:bg-[#e6e2d8] hover:text-[#333333] xl:flex"
-              >
-                <MessageSquareText className="h-4 w-4" />
-                <span>Ask Keystone...</span>
-              </button>
+              {isMarq && (
+                <button
+                  type="button"
+                  onClick={() => setIsChatOpen(true)}
+                  className="hidden h-9 min-w-[155px] items-center gap-2 rounded-xl bg-[#efede8] px-4 text-xs font-medium text-[#77736b] transition hover:bg-[#e6e2d8] hover:text-[#333333] xl:flex"
+                >
+                  <MessageSquareText className="h-4 w-4" />
+                  <span>Ask the market</span>
+                </button>
+              )}
 
               <div
                 title={user?.name ?? "User"}
@@ -251,12 +260,25 @@ export function AppLayout() {
         </main>
       </div>
 
-      <ChatDrawer
-        open={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-      />
+      {isMarq && (
+        <>
+          <ChatDrawer open={isChatOpen} onClose={() => setIsChatOpen(false)} />
 
-      <OnboardingChat />
+          {/* Floating button to open the site chatbot (replaces Onboarding Assistant) */}
+          {!isChatOpen && (
+            <button
+              type="button"
+              onClick={() => setIsChatOpen(true)}
+              aria-label="Open assistant"
+              className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition hover:bg-slate-700"
+            >
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )}
+        </>
+      )}
     </>
   );
 }

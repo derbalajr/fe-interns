@@ -1,4 +1,4 @@
-import { ArrowDownUp, Filter, Home, Layers, Wallet } from "lucide-react";
+import { ArrowDownUp, Filter, Home, Layers, MapPin, Wallet } from "lucide-react";
 
 import type { UnitSort } from "@/api/unitApi";
 import { PRICE_RANGES, type PriceRangeKey } from "@/lib/unit-filters";
@@ -21,11 +21,14 @@ const selectClassName =
   "h-11 rounded-xl border border-[#e8e8e8] bg-white px-4 text-xs text-[#666666] shadow-[0_2px_8px_rgba(0,0,0,0.035)] outline-none transition focus:border-[#cccccc]";
 
 type UnitsToolbarProps = {
+  projectId: string;
+  projectOptions: { id: number; name: string }[];
   type: string;
   status: string;
   priceRange: PriceRangeKey;
   sort: UnitSort;
   typeOptions: string[];
+  onProjectChange: (value: string) => void;
   onTypeChange: (value: string) => void;
   onStatusChange: (value: string) => void;
   onPriceRangeChange: (value: PriceRangeKey) => void;
@@ -33,11 +36,14 @@ type UnitsToolbarProps = {
 };
 
 export function UnitsToolbar({
+  projectId,
+  projectOptions,
   type,
   status,
   priceRange,
   sort,
   typeOptions,
+  onProjectChange,
   onTypeChange,
   onStatusChange,
   onPriceRangeChange,
@@ -46,6 +52,24 @@ export function UnitsToolbar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex flex-wrap items-center gap-2.5">
+        <div className="relative">
+          <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#999999]" />
+
+          <select
+            aria-label="Filter units by project"
+            value={projectId}
+            onChange={(event) => onProjectChange(event.target.value)}
+            className={`${selectClassName} min-w-[170px] pl-9`}
+          >
+            <option value="">Project: All</option>
+            {projectOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="relative">
           <Home className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#999999]" />
 
