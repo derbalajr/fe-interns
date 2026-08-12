@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import type { UnitSort } from "@/api/unitApi";
 import { PRICE_RANGES, type PriceRangeKey } from "@/lib/unit-filters";
 import { useCan } from "@/hooks/use-can";
-import { useProjectQuery } from "@/hooks/use-project-query";
 import { useProjectsQuery } from "@/hooks/use-projects-query";
 import { useUnitsQuery } from "@/hooks/use-units-query";
 
