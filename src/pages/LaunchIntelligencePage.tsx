@@ -21,6 +21,7 @@ import type { ReactNode } from "react";
 
 import { IntelTabs } from "@/components/intel/IntelTabs";
 import { PageHeader } from "@/components/PageHeader";
+import { fromPrice, price } from "@/lib/intel-format";
 import {
   useDeliveryPipelineQuery,
   useMarketShareQuery,
@@ -35,24 +36,8 @@ import type {
 } from "@/types/intel";
 
 // ---- formatting helpers -----------------------------------------------------
-
-const egp = new Intl.NumberFormat("en-EG", {
-  style: "currency",
-  currency: "EGP",
-  maximumFractionDigits: 0,
-});
-
-/** A starting price → "from EGP X"; null/undefined → "—" (never 0). */
-function fromPrice(value: number | null | undefined): string {
-  if (value === null || value === undefined) return "—";
-  return `from ${egp.format(value)}`;
-}
-
-/** A plain price → "EGP X"; null/undefined → "—". */
-function price(value: number | null | undefined): string {
-  if (value === null || value === undefined) return "—";
-  return egp.format(value);
-}
+// price() and fromPrice() come from @/lib/intel-format so every Intel screen
+// shares one EGP/null-handling implementation.
 
 const pct = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,

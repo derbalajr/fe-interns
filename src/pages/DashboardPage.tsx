@@ -81,7 +81,7 @@ export function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">Projects</p>
               <h2 className="mt-2 text-3xl font-bold text-slate-900">
-                {formatCount(isMarq ? projectsTotal : 124)}
+                {formatCount(isMarq ? projectsTotal : null)}
               </h2>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -100,7 +100,7 @@ export function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">Units</p>
               <h2 className="mt-2 text-3xl font-bold text-slate-900">
-                {formatCount(isMarq ? unitsTotal : 18)}
+                {formatCount(isMarq ? unitsTotal : null)}
               </h2>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
@@ -119,7 +119,7 @@ export function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">Reservations</p>
               <h2 className="mt-2 text-3xl font-bold text-slate-900">
-                {formatCount(isMarq ? reservationsTotal : 67)}
+                {formatCount(isMarq ? reservationsTotal : null)}
               </h2>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
@@ -138,7 +138,7 @@ export function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">Handovers</p>
               <h2 className="mt-2 text-3xl font-bold text-slate-900">
-                {formatCount(isMarq ? handoversTotal : 94)}
+                {formatCount(isMarq ? handoversTotal : null)}
               </h2>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700">

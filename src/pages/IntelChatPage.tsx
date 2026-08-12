@@ -42,8 +42,24 @@ export function IntelChatPage() {
   const [conversationId, setConversationId] = useState<string | undefined>(() => {
     return readStoredChat<string>(CHAT_CONVERSATION_KEY) ?? undefined;
   });
-  const [agentDown, setAgentDown] = useState(false); // 503 → disable entry point.
+  // 503 → disable entry point. Shared with ChatDrawer via the "intel-agent-down"
+  // localStorage key, so a 503 tripped on either surface disables both.
+  const [agentDown, setAgentDown] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return Boolean(window.localStorage.getItem("intel-agent-down"));
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "intel-agent-down") {
+        setAgentDown(Boolean(e.newValue));
+      }
+    };
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
