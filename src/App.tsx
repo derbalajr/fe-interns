@@ -24,6 +24,7 @@ import { UnitDetailPage } from "@/pages/UnitDetailPage";
 import { ReservationsPage } from "@/pages/ReservationsPage";
 import UsersPage from "@/pages/UsersPage";
 import RolesPage from "@/pages/RolesPage";
+import { HandoversPage } from "@/pages/HandoversPage";
 
 function App() {
   return (
@@ -113,6 +114,16 @@ function App() {
               </TenantRoute>
             }
           />
+          <Route element={<ProtectedRoute permission="view-handovers" />}>
+  <Route
+    path="handovers"
+    element={
+      <TenantRoute allowedTenant="marq">
+        <HandoversPage />
+      </TenantRoute>
+    }
+  />
+</Route>
 
           {/* Projects list + project details (MARQ, gated by view-projects). */}
           <Route element={<ProtectedRoute permission="view-projects" />}>
