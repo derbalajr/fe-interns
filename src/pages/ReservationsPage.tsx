@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/format";
 import { useCan } from "@/hooks/use-can";
 import { useReservationsQuery } from "@/hooks/use-reservations-query";
 import { useCancelReservationMutation } from "@/hooks/use-cancel-reservation-mutation";
+import { useSellUnitMutation } from "@/hooks/use-sell-unit-mutation";
 import type { Reservation, ReservationStatus } from "@/types/reservation";
 import { getProjectName } from "@/utils/unit";
 
@@ -35,9 +36,11 @@ export function ReservationsPage() {
   const { can } = useCan();
   const { data, isLoading, isError, refetch } = useReservationsQuery();
   const cancelReservation = useCancelReservationMutation();
+  const sellUnit = useSellUnitMutation();
 
   const reservations = data?.data ?? [];
   const canCancel = can("cancel-reservations");
+  const canSell = can("edit-units");
 
   const handleCancel = (reservation: Reservation) => {
     cancelReservation.mutate(reservation.id, {
@@ -47,6 +50,19 @@ export function ReservationsPage() {
           error instanceof ApiError
             ? error.message
             : "Could not cancel this reservation.";
+        toast.error(message);
+      },
+    });
+  };
+
+  const handleSell = (reservation: Reservation) => {
+    sellUnit.mutate(reservation.unit_id, {
+      onSuccess: () => toast.success("Unit marked as sold."),
+      onError: (error: unknown) => {
+        const message =
+          error instanceof ApiError
+            ? error.message
+            : "Could not mark this unit as sold.";
         toast.error(message);
       },
     });
@@ -93,47 +109,66 @@ export function ReservationsPage() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {reservations.map((reservation) => (
-            <article
-              key={reservation.id}
-              className="flex flex-col rounded-2xl border border-[#ececec] bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-[#242424]">
-                    {reservation.unit
-                      ? `${getProjectName(reservation.unit)} — ${reservation.unit.code}`
-                      : `Unit #${reservation.unit_id}`}
-                  </p>
-                  <p className="mt-0.5 truncate text-[13px] text-[#8a8a8a]">
-                    {reservation.client?.name ??
-                      `Client #${reservation.client_id}`}
-                  </p>
+          {reservations.map((reservation) => {
+            const showSell = canSell && reservation.status === "pending";
+            const showCancel = canCancel && reservation.status !== "cancelled";
+
+            return (
+              <article
+                key={reservation.id}
+                className="flex flex-col rounded-2xl border border-[#ececec] bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-[#242424]">
+                      {reservation.unit
+                        ? `${getProjectName(reservation.unit)} — ${reservation.unit.code}`
+                        : `Unit #${reservation.unit_id}`}
+                    </p>
+                    <p className="mt-0.5 truncate text-[13px] text-[#8a8a8a]">
+                      {reservation.client?.name ??
+                        `Client #${reservation.client_id}`}
+                    </p>
+                  </div>
+
+                  <ReservationStatusBadge status={reservation.status} />
                 </div>
 
-                <ReservationStatusBadge status={reservation.status} />
-              </div>
+                <p className="mt-4 text-lg font-semibold text-[#171717]">
+                  {formatCurrency(Number(reservation.reserved_price))}
+                </p>
 
-              <p className="mt-4 text-lg font-semibold text-[#171717]">
-                {formatCurrency(Number(reservation.reserved_price))}
-              </p>
+                {(showSell || showCancel) && (
+                  <div className="mt-4 flex justify-end gap-2">
+                    {showSell && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={sellUnit.isPending}
+                        onClick={() => handleSell(reservation)}
+                        className="h-8 rounded-lg px-3 text-xs"
+                      >
+                        {sellUnit.isPending ? "Marking sold…" : "Mark sold"}
+                      </Button>
+                    )}
 
-              {canCancel && reservation.status !== "cancelled" && (
-                <div className="mt-4 flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={cancelReservation.isPending}
-                    onClick={() => handleCancel(reservation)}
-                    className="h-8 rounded-lg px-3 text-xs text-[#d64545] hover:bg-red-50"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
-            </article>
-          ))}
+                    {showCancel && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={cancelReservation.isPending}
+                        onClick={() => handleCancel(reservation)}
+                        className="h-8 rounded-lg px-3 text-xs text-[#d64545] hover:bg-red-50"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       )}
     </section>

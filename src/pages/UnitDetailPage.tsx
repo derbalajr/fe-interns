@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { toast } from "sonner";
+
 import { ReserveUnitDialog } from "@/components/reservations/ReserveUnitDialog";
 import { UnitStatusBadge } from "@/components/units/UnitStatusBadge";
 import { EmptyState } from "@/components/states/EmptyState";
@@ -10,6 +12,7 @@ import { ApiError } from "@/lib/fetcher";
 import { formatCurrency } from "@/lib/format";
 import { getUnitGallery } from "@/lib/unit-images";
 import { useCan } from "@/hooks/use-can";
+import { useSellUnitMutation } from "@/hooks/use-sell-unit-mutation";
 import { useUnitQuery } from "@/hooks/use-unit-query";
 import { formatUnitArea, getProjectName } from "@/utils/unit";
 import { Pencil } from "lucide-react";
@@ -21,11 +24,23 @@ export function UnitDetailPage() {
 
   const { can } = useCan();
   const { data: unit, isLoading, isError, error } = useUnitQuery(unitId);
+  const sellUnit = useSellUnitMutation();
 
-  const gallery = useMemo(
-    () => (unit ? getUnitGallery(unit, 5) : []),
-    [unit],
-  );
+  const handleSell = () => {
+    if (!unit) return;
+
+    sellUnit.mutate(unit.id, {
+      onSuccess: () => toast.success(`Unit ${unit.code} marked as sold.`),
+      onError: (mutationError: unknown) =>
+        toast.error(
+          mutationError instanceof ApiError
+            ? mutationError.message
+            : "Could not mark this unit as sold.",
+        ),
+    });
+  };
+
+  const gallery = useMemo(() => (unit ? getUnitGallery(unit, 5) : []), [unit]);
   const [activeImage, setActiveImage] = useState(0);
   const [isReserveOpen, setIsReserveOpen] = useState(false);
 
@@ -80,36 +95,46 @@ export function UnitDetailPage() {
           </p>
         </div>
 
-       <div className="flex items-center gap-3">
-        <UnitStatusBadge
-          status={unit.status}
-          className="px-3 py-1.5 text-xs"
-        />
+        <div className="flex items-center gap-3">
+          <UnitStatusBadge
+            status={unit.status}
+            className="px-3 py-1.5 text-xs"
+          />
 
-  {can("edit-units") && (
-    <EditUnitDialog
-      unit={unit}
-      trigger={
-        <Button
-          type="button"
-          variant="outline"
-          className="h-10 gap-1.5 rounded-xl px-4"
-        >
-          <Pencil className="h-4 w-4" />
-          Edit
-        </Button>
-      }
-    />
-  )}
+          {can("edit-units") && (
+            <EditUnitDialog
+              unit={unit}
+              trigger={
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-10 gap-1.5 rounded-xl px-4"
+                >
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </Button>
+              }
+            />
+          )}
 
-  {unit.status === "available" &&
-    can("create-reservations") && (
+          {unit.status === "available" && can("create-reservations") && (
             <Button
               type="button"
               onClick={() => setIsReserveOpen(true)}
               className="h-10 rounded-xl px-4 text-sm"
             >
               Reserve for client
+            </Button>
+          )}
+
+          {unit.status === "reserved" && can("edit-units") && (
+            <Button
+              type="button"
+              onClick={handleSell}
+              disabled={sellUnit.isPending}
+              className="h-10 rounded-xl px-4 text-sm"
+            >
+              {sellUnit.isPending ? "Marking sold…" : "Mark as sold"}
             </Button>
           )}
         </div>
@@ -168,10 +193,7 @@ export function UnitDetailPage() {
             />
             <DetailRow label="Type" value={unit.type} />
             <DetailRow label="Area" value={formatUnitArea(unit.area)} />
-            <DetailRow
-              label="Location"
-              value={unit.project?.location ?? "—"}
-            />
+            <DetailRow label="Location" value={unit.project?.location ?? "—"} />
             <DetailRow
               label="Status"
               value={<UnitStatusBadge status={unit.status} />}
