@@ -2,12 +2,9 @@ import type { Project } from "@/types/project";
 import type { Unit } from "@/types/unit";
 
 /**
- * The backend has no image columns yet, so we render deterministic
- * placeholder photos. Seeding by id keeps a given unit/project showing the
- * same images across renders and pages (no flicker, stable galleries).
- *
- * Swap this file for real `unit.images` / `project.cover_image` once the
- * backend exposes them — nothing else needs to change.
+ * Units expose real photos via `unit.photos` (uploaded files or seeded URLs).
+ * When a unit has none, we fall back to a deterministic placeholder seeded by
+ * id/code so the same unit always shows the same image (no flicker).
  */
 function placeholder(seed: string, width: number, height: number): string {
   return `https://picsum.photos/seed/${encodeURIComponent(
@@ -24,18 +21,32 @@ export function getProjectImage(
 }
 
 export function getUnitCoverImage(
-  unit: Pick<Unit, "id" | "code">,
+  unit: Pick<Unit, "id" | "code" | "photos">,
   width = 640,
   height = 420,
 ): string {
+  const cover = unit.photos?.[0]?.url;
+  if (cover) {
+    return cover;
+  }
+
   return placeholder(`unit-${unit.id}-${unit.code}`, width, height);
 }
 
 export function getUnitGallery(
-  unit: Pick<Unit, "id" | "code">,
+  unit: Pick<Unit, "id" | "code" | "photos">,
   count = 5,
 ): string[] {
-  return Array.from({ length: count }, (_, index) =>
-    placeholder(`unit-${unit.id}-${unit.code}-${index}`, 800, 600),
+  const real = unit.photos?.map((photo) => photo.url) ?? [];
+
+  if (real.length >= count) {
+    return real.slice(0, count);
+  }
+
+  // Top up with stable placeholders so the gallery always has `count` slots.
+  const fillers = Array.from({ length: count - real.length }, (_, index) =>
+    placeholder(`unit-${unit.id}-${unit.code}-${real.length + index}`, 800, 600),
   );
+
+  return [...real, ...fillers];
 }
