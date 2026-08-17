@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 
 import { useCreateHandoverMutation } from "@/hooks/use-create-handover-mutation";
+import { useHandoversQuery } from "@/hooks/use-handovers-query";
 import { useUnitsQuery } from "@/hooks/use-units-query";
 
 type ScheduleHandoverDialogProps = {
@@ -32,12 +33,16 @@ export function ScheduleHandoverDialog({
   // from the unit's reservation — so we only pick a unit here.
   const {
     data: soldUnitsData,
-    isLoading: unitsLoading,
+    isLoading: soldUnitsLoading,
     isError: unitsError,
   } = useUnitsQuery({
     status: "sold",
     enabled: open,
   });
+
+  // A unit can only have one handover, so exclude any that already have one.
+  const { data: handoversData, isLoading: handoversLoading } =
+    useHandoversQuery();
 
   const [unitId, setUnitId] = useState("");
   const [handoverDate, setHandoverDate] = useState("");
@@ -45,7 +50,16 @@ export function ScheduleHandoverDialog({
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const eligibleUnits = soldUnitsData?.data ?? [];
+  const unitsLoading = soldUnitsLoading || handoversLoading;
+
+  const eligibleUnits = useMemo(() => {
+    const soldUnits = soldUnitsData?.data ?? [];
+    const takenUnitIds = new Set(
+      (handoversData?.data ?? []).map((handover) => handover.unit_id),
+    );
+
+    return soldUnits.filter((unit) => !takenUnitIds.has(unit.id));
+  }, [soldUnitsData, handoversData]);
 
   if (!open) {
     return null;
