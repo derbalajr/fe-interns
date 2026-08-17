@@ -37,6 +37,12 @@ export const APP_MODULES: AppModule[] = [
     tenants: ["marq"],
   },
   {
+    label: "Handovers",
+    path: "/handovers",
+    permission: "view-handovers",
+    tenants: ["marq"],
+  },
+  {
     label: "Projects",
     path: "/projects",
     permission: "view-projects",

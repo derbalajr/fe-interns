@@ -37,3 +37,9 @@ export type HandoversResponse = {
     total: number;
   };
 };
+export type CreateHandoverPayload = {
+  unit_id: number;
+  client_id: number;
+  handover_date: string;
+  notes?: string | null;
+};
