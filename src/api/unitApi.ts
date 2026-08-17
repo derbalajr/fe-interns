@@ -1,14 +1,10 @@
-import { apiGet, apiPost } from "@/lib/fetcher";
+import { apiGet, apiPatch, apiPost } from "@/lib/fetcher";
 
 import type { UnitResponse, UnitsResponse } from "@/types/unit";
 
 const PER_PAGE = 100;
 
-export type UnitSort =
-  | "newest"
-  | "oldest"
-  | "price_asc"
-  | "price_desc";
+export type UnitSort = "newest" | "oldest" | "price_asc" | "price_desc";
 
 export interface UnitFilters {
   page?: number;
@@ -53,9 +49,7 @@ export function getUnits({
     params.set("sort", sort);
   }
 
-  return apiGet<UnitsResponse>(
-    `/units?${params.toString()}`,
-  );
+  return apiGet<UnitsResponse>(`/units?${params.toString()}`);
 }
 
 export function getUnit(id: number | string) {
@@ -67,8 +61,11 @@ export function createUnit(data: FormData) {
 }
 
 export function updateUnit(id: number, data: FormData) {
-  return apiPost<UnitResponse, FormData>(
-    `/units/${id}`,
-    data,
-  );
+  return apiPost<UnitResponse, FormData>(`/units/${id}`, data);
+}
+
+// Marks a reserved unit as sold. The backend confirms the reservation and
+// records the sale; no body is needed.
+export function sellUnit(id: number) {
+  return apiPatch<UnitResponse, Record<string, never>>(`/units/${id}/sell`, {});
 }
