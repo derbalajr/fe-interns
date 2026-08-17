@@ -38,8 +38,9 @@ export type HandoversResponse = {
   };
 };
 export type CreateHandoverPayload = {
+  // The client is derived server-side from the unit's reservation, so it is
+  // not sent from here.
   unit_id: number;
-  client_id: number;
   handover_date: string;
   notes?: string | null;
 };

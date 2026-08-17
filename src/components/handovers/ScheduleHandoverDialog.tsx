@@ -1,8 +1,7 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 
 import { useCreateHandoverMutation } from "@/hooks/use-create-handover-mutation";
-import { useClientsQuery } from "@/hooks/use-clients-query";
 import { useUnitsQuery } from "@/hooks/use-units-query";
 
 type ScheduleHandoverDialogProps = {
@@ -12,7 +11,6 @@ type ScheduleHandoverDialogProps = {
 
 type FormErrors = {
   unitId?: string;
-  clientId?: string;
   handoverDate?: string;
 };
 
@@ -30,57 +28,24 @@ export function ScheduleHandoverDialog({
 }: ScheduleHandoverDialogProps) {
   const createHandoverMutation = useCreateHandoverMutation();
 
-  const {
-    data: clientsData,
-    isLoading: clientsLoading,
-    isError: clientsError,
-  } = useClientsQuery({
-    enabled: open,
-  });
-
-  const {
-    data: reservedUnitsData,
-    isLoading: reservedUnitsLoading,
-    isError: reservedUnitsError,
-  } = useUnitsQuery({
-    status: "reserved",
-    enabled: open,
-  });
-
+  // Only sold units can be handed over, and the client is derived server-side
+  // from the unit's reservation — so we only pick a unit here.
   const {
     data: soldUnitsData,
-    isLoading: soldUnitsLoading,
-    isError: soldUnitsError,
+    isLoading: unitsLoading,
+    isError: unitsError,
   } = useUnitsQuery({
     status: "sold",
     enabled: open,
   });
 
   const [unitId, setUnitId] = useState("");
-  const [clientId, setClientId] = useState("");
   const [handoverDate, setHandoverDate] = useState("");
   const [notes, setNotes] = useState("");
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const clients = clientsData?.data ?? [];
-
-  const eligibleUnits = useMemo(() => {
-    const reserved = reservedUnitsData?.data ?? [];
-    const sold = soldUnitsData?.data ?? [];
-
-    const units = [...reserved, ...sold];
-
-    return units.filter(
-      (unit, index, allUnits) =>
-        allUnits.findIndex((currentUnit) => currentUnit.id === unit.id) ===
-        index,
-    );
-  }, [reservedUnitsData, soldUnitsData]);
-
-  const unitsLoading = reservedUnitsLoading || soldUnitsLoading;
-
-  const unitsError = reservedUnitsError || soldUnitsError;
+  const eligibleUnits = soldUnitsData?.data ?? [];
 
   if (!open) {
     return null;
@@ -91,10 +56,6 @@ export function ScheduleHandoverDialog({
 
     if (!unitId) {
       newErrors.unitId = "Please select a unit.";
-    }
-
-    if (!clientId) {
-      newErrors.clientId = "Please select a client.";
     }
 
     if (!handoverDate) {
@@ -108,7 +69,6 @@ export function ScheduleHandoverDialog({
 
   function resetForm() {
     setUnitId("");
-    setClientId("");
     setHandoverDate("");
     setNotes("");
     setErrors({});
@@ -129,7 +89,6 @@ export function ScheduleHandoverDialog({
     createHandoverMutation.mutate(
       {
         unit_id: Number(unitId),
-        client_id: Number(clientId),
         handover_date: handoverDate,
         notes: notes.trim() || null,
       },
@@ -153,7 +112,7 @@ export function ScheduleHandoverDialog({
             </h2>
 
             <p className="mt-1 text-sm text-[#626262]">
-              Schedule a handover for a reserved or sold unit.
+              Schedule a handover for a sold unit.
             </p>
           </div>
 
@@ -202,10 +161,13 @@ export function ScheduleHandoverDialog({
                     : unit.project?.title
                       ? ` - ${unit.project.title}`
                       : ""}
-                  {` (${unit.status})`}
                 </option>
               ))}
             </select>
+
+            <p className="mt-1 text-xs text-[#9c9c9c]">
+              The client is taken from the unit&apos;s sale.
+            </p>
 
             {errors.unitId && (
               <p className="mt-1 text-sm text-red-600">{errors.unitId}</p>
@@ -217,58 +179,7 @@ export function ScheduleHandoverDialog({
 
             {!unitsLoading && !unitsError && eligibleUnits.length === 0 && (
               <p className="mt-1 text-sm text-[#626262]">
-                No reserved or sold units are available.
-              </p>
-            )}
-          </div>
-
-          {/* Client */}
-          <div>
-            <label
-              htmlFor="handover-client"
-              className="mb-2 block text-sm font-medium text-black"
-            >
-              Client
-            </label>
-
-            <select
-              id="handover-client"
-              value={clientId}
-              disabled={clientsLoading || clientsError}
-              onChange={(event) => {
-                setClientId(event.target.value);
-
-                setErrors((current) => ({
-                  ...current,
-                  clientId: undefined,
-                }));
-              }}
-              className="h-12 w-full rounded-xl border border-[#dedede] bg-white px-4 text-sm text-black outline-none focus:border-[#9c9c9c] disabled:cursor-not-allowed disabled:bg-[#f3f3f3]"
-            >
-              <option value="">
-                {clientsLoading ? "Loading clients..." : "Select a client"}
-              </option>
-
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name} - {client.email}
-                </option>
-              ))}
-            </select>
-
-            {errors.clientId && (
-              <p className="mt-1 text-sm text-red-600">{errors.clientId}</p>
-            )}
-
-            {clientsError && (
-              <p className="mt-1 text-sm text-red-600">
-                Failed to load clients.
-              </p>
-            )}
-
-            {!clientsLoading && !clientsError && clients.length === 0 && (
-              <p className="mt-1 text-sm text-[#626262]">
-                No clients are available.
+                No sold units are available for handover.
               </p>
             )}
           </div>
@@ -328,8 +239,8 @@ export function ScheduleHandoverDialog({
           {/* API Error */}
           {createHandoverMutation.isError && (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              Failed to schedule handover. Please check the selected unit,
-              client, and date and try again.
+              Failed to schedule handover. Please check the selected unit and
+              date and try again.
             </div>
           )}
 
@@ -346,11 +257,7 @@ export function ScheduleHandoverDialog({
             <button
               type="submit"
               disabled={
-                createHandoverMutation.isPending ||
-                unitsLoading ||
-                clientsLoading ||
-                unitsError ||
-                clientsError
+                createHandoverMutation.isPending || unitsLoading || unitsError
               }
               className="h-11 rounded-xl bg-black/80 px-5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
