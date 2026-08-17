@@ -1,4 +1,3 @@
-
 import { Route, Routes } from "react-router-dom";
 
 import { AppLayout } from "@/components/AppLayout";
@@ -115,15 +114,15 @@ function App() {
             }
           />
           <Route element={<ProtectedRoute permission="view-handovers" />}>
-  <Route
-    path="handovers"
-    element={
-      <TenantRoute allowedTenant="marq">
-        <HandoversPage />
-      </TenantRoute>
-    }
-  />
-</Route>
+            <Route
+              path="handovers"
+              element={
+                <TenantRoute allowedTenant="marq">
+                  <HandoversPage />
+                </TenantRoute>
+              }
+            />
+          </Route>
 
           {/* Projects list + project details (MARQ, gated by view-projects). */}
           <Route element={<ProtectedRoute permission="view-projects" />}>
@@ -185,4 +184,3 @@ function App() {
 }
 
 export default App;
-

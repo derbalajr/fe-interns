@@ -10,12 +10,25 @@ type ScheduleHandoverDialogProps = {
   onClose: () => void;
 };
 
+type FormErrors = {
+  unitId?: string;
+  clientId?: string;
+  handoverDate?: string;
+};
+
+function getLocalDateString(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export function ScheduleHandoverDialog({
   open,
   onClose,
 }: ScheduleHandoverDialogProps) {
-  const createHandoverMutation =
-    useCreateHandoverMutation();
+  const createHandoverMutation = useCreateHandoverMutation();
 
   const {
     data: clientsData,
@@ -31,6 +44,7 @@ export function ScheduleHandoverDialog({
     isError: reservedUnitsError,
   } = useUnitsQuery({
     status: "reserved",
+    enabled: open,
   });
 
   const {
@@ -39,19 +53,15 @@ export function ScheduleHandoverDialog({
     isError: soldUnitsError,
   } = useUnitsQuery({
     status: "sold",
+    enabled: open,
   });
 
   const [unitId, setUnitId] = useState("");
   const [clientId, setClientId] = useState("");
-  const [handoverDate, setHandoverDate] =
-    useState("");
+  const [handoverDate, setHandoverDate] = useState("");
   const [notes, setNotes] = useState("");
 
-  const [errors, setErrors] = useState<{
-    unitId?: string;
-    clientId?: string;
-    handoverDate?: string;
-  }>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const clients = clientsData?.data ?? [];
 
@@ -63,42 +73,32 @@ export function ScheduleHandoverDialog({
 
     return units.filter(
       (unit, index, allUnits) =>
-        allUnits.findIndex(
-          (currentUnit) =>
-            currentUnit.id === unit.id,
-        ) === index,
+        allUnits.findIndex((currentUnit) => currentUnit.id === unit.id) ===
+        index,
     );
   }, [reservedUnitsData, soldUnitsData]);
 
-  const unitsLoading =
-    reservedUnitsLoading || soldUnitsLoading;
+  const unitsLoading = reservedUnitsLoading || soldUnitsLoading;
 
-  const unitsError =
-    reservedUnitsError || soldUnitsError;
+  const unitsError = reservedUnitsError || soldUnitsError;
 
   if (!open) {
     return null;
   }
 
   function validateForm() {
-    const newErrors: {
-      unitId?: string;
-      clientId?: string;
-      handoverDate?: string;
-    } = {};
+    const newErrors: FormErrors = {};
 
     if (!unitId) {
       newErrors.unitId = "Please select a unit.";
     }
 
     if (!clientId) {
-      newErrors.clientId =
-        "Please select a client.";
+      newErrors.clientId = "Please select a client.";
     }
 
     if (!handoverDate) {
-      newErrors.handoverDate =
-        "Handover date is required.";
+      newErrors.handoverDate = "Handover date is required.";
     }
 
     setErrors(newErrors);
@@ -119,9 +119,7 @@ export function ScheduleHandoverDialog({
     onClose();
   }
 
-  function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!validateForm()) {
@@ -155,8 +153,7 @@ export function ScheduleHandoverDialog({
             </h2>
 
             <p className="mt-1 text-sm text-[#626262]">
-              Schedule a handover for a reserved or
-              sold unit.
+              Schedule a handover for a reserved or sold unit.
             </p>
           </div>
 
@@ -169,10 +166,7 @@ export function ScheduleHandoverDialog({
           </button>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="mt-6 space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
           {/* Unit */}
           <div>
             <label
@@ -197,16 +191,11 @@ export function ScheduleHandoverDialog({
               className="h-12 w-full rounded-xl border border-[#dedede] bg-white px-4 text-sm text-black outline-none focus:border-[#9c9c9c] disabled:cursor-not-allowed disabled:bg-[#f3f3f3]"
             >
               <option value="">
-                {unitsLoading
-                  ? "Loading units..."
-                  : "Select a unit"}
+                {unitsLoading ? "Loading units..." : "Select a unit"}
               </option>
 
               {eligibleUnits.map((unit) => (
-                <option
-                  key={unit.id}
-                  value={unit.id}
-                >
+                <option key={unit.id} value={unit.id}>
                   {unit.code}
                   {unit.project?.name
                     ? ` - ${unit.project.name}`
@@ -219,25 +208,18 @@ export function ScheduleHandoverDialog({
             </select>
 
             {errors.unitId && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.unitId}
-              </p>
+              <p className="mt-1 text-sm text-red-600">{errors.unitId}</p>
             )}
 
             {unitsError && (
-              <p className="mt-1 text-sm text-red-600">
-                Failed to load units.
-              </p>
+              <p className="mt-1 text-sm text-red-600">Failed to load units.</p>
             )}
 
-            {!unitsLoading &&
-              !unitsError &&
-              eligibleUnits.length === 0 && (
-                <p className="mt-1 text-sm text-[#626262]">
-                  No reserved or sold units are
-                  available.
-                </p>
-              )}
+            {!unitsLoading && !unitsError && eligibleUnits.length === 0 && (
+              <p className="mt-1 text-sm text-[#626262]">
+                No reserved or sold units are available.
+              </p>
+            )}
           </div>
 
           {/* Client */}
@@ -264,25 +246,18 @@ export function ScheduleHandoverDialog({
               className="h-12 w-full rounded-xl border border-[#dedede] bg-white px-4 text-sm text-black outline-none focus:border-[#9c9c9c] disabled:cursor-not-allowed disabled:bg-[#f3f3f3]"
             >
               <option value="">
-                {clientsLoading
-                  ? "Loading clients..."
-                  : "Select a client"}
+                {clientsLoading ? "Loading clients..." : "Select a client"}
               </option>
 
               {clients.map((client) => (
-                <option
-                  key={client.id}
-                  value={client.id}
-                >
+                <option key={client.id} value={client.id}>
                   {client.name} - {client.email}
                 </option>
               ))}
             </select>
 
             {errors.clientId && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.clientId}
-              </p>
+              <p className="mt-1 text-sm text-red-600">{errors.clientId}</p>
             )}
 
             {clientsError && (
@@ -291,13 +266,11 @@ export function ScheduleHandoverDialog({
               </p>
             )}
 
-            {!clientsLoading &&
-              !clientsError &&
-              clients.length === 0 && (
-                <p className="mt-1 text-sm text-[#626262]">
-                  No clients are available.
-                </p>
-              )}
+            {!clientsLoading && !clientsError && clients.length === 0 && (
+              <p className="mt-1 text-sm text-[#626262]">
+                No clients are available.
+              </p>
+            )}
           </div>
 
           {/* Date */}
@@ -313,15 +286,9 @@ export function ScheduleHandoverDialog({
               id="handover-date"
               type="date"
               value={handoverDate}
-              min={
-                new Date()
-                  .toISOString()
-                  .split("T")[0]
-              }
+              min={getLocalDateString(new Date())}
               onChange={(event) => {
-                setHandoverDate(
-                  event.target.value,
-                );
+                setHandoverDate(event.target.value);
 
                 setErrors((current) => ({
                   ...current,
@@ -332,9 +299,7 @@ export function ScheduleHandoverDialog({
             />
 
             {errors.handoverDate && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.handoverDate}
-              </p>
+              <p className="mt-1 text-sm text-red-600">{errors.handoverDate}</p>
             )}
           </div>
 
@@ -345,7 +310,6 @@ export function ScheduleHandoverDialog({
               className="mb-2 block text-sm font-medium text-black"
             >
               Notes
-
               <span className="ml-1 font-normal text-[#9c9c9c]">
                 (optional)
               </span>
@@ -354,9 +318,7 @@ export function ScheduleHandoverDialog({
             <textarea
               id="handover-notes"
               value={notes}
-              onChange={(event) =>
-                setNotes(event.target.value)
-              }
+              onChange={(event) => setNotes(event.target.value)}
               placeholder="Add notes"
               rows={4}
               className="w-full resize-none rounded-xl border border-[#dedede] bg-white px-4 py-3 text-sm text-black outline-none focus:border-[#9c9c9c]"
@@ -366,9 +328,8 @@ export function ScheduleHandoverDialog({
           {/* API Error */}
           {createHandoverMutation.isError && (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              Failed to schedule handover. Please
-              check the selected unit, client, and
-              date and try again.
+              Failed to schedule handover. Please check the selected unit,
+              client, and date and try again.
             </div>
           )}
 
